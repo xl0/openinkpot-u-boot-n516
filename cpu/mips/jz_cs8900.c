@@ -53,7 +53,7 @@ struct eth_device *dev;
 
 #ifdef CONFIG_DRIVER_CS8900
 
-#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NET)
+#if defined(CONFIG_CMD_NET)
 
 #undef DEBUG
 

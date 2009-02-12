@@ -59,18 +59,19 @@
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
 
-#define CONFIG_COMMANDS		(CONFIG_CMD_DFL | \
-				 CONFIG_SYS_CMD_ASKENV | \
-                                 CONFIG_SYS_CMD_NAND   | \
-				 CONFIG_SYS_CMD_MMC    | \
-                                 CONFIG_SYS_CMD_FAT    | \
-				 CONFIG_SYS_CMD_DHCP	| \
-				 CONFIG_SYS_CMD_PING   )
+#include <config_cmd_default.h>
+
+#define CONFIG_CMD_ASKENV
+#define CONFIG_CMD_DHCP
+#define CONFIG_CMD_PING
+#define CONFIG_CMD_NAND
+#define CONFIG_CMD_MMC
+#define CONFIG_CMD_FAT
+
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
-#include <cmd_confdefs.h>
 
 #define CONFIG_BOOTDELAY	3
 #define CONFIG_BOOTFILE	        "uImage"	/* file to load */

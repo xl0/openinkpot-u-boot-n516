@@ -11,7 +11,7 @@
  */
 #include <common.h>
 
-#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) && defined(CONFIG_JZ4740)
+#if defined(CONFIG_CMD_NAND) && defined(CONFIG_JZ4740)
 
 #include <nand.h>
 #include <asm/jz4740.h>
@@ -212,4 +212,4 @@ void board_nand_init(struct nand_chip *nand)
         nand->chip_delay = 20;
 	nand->autooob    = &nand_oob_rs;
 }
-#endif /* (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) */
+#endif /* defined(CONFIG_CMD_NAND) */
