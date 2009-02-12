@@ -55,12 +55,12 @@ void pll_init(void)
 		(n2FR[div[3]] << CPM_CPCCR_MDIV_BIT) |
 		(n2FR[div[4]] << CPM_CPCCR_LDIV_BIT);
 
-	pllout2 = (cfcr & CPM_CPCCR_PCS) ? CFG_CPU_SPEED : (CFG_CPU_SPEED / 2);
+	pllout2 = (cfcr & CPM_CPCCR_PCS) ? CONFIG_SYS_CPU_SPEED : (CFG_CPU_SPEED / 2);
 
 	/* Init USB Host clock, pllout2 must be n*48MHz */
 	REG_CPM_UHCCDR = pllout2 / 48000000 - 1;
 
-	nf = CFG_CPU_SPEED * 2 / CFG_EXTAL;
+	nf = CONFIG_SYS_CPU_SPEED * 2 / CONFIG_SYS_EXTAL;
 	plcr1 = ((nf - 2) << CPM_CPPCR_PLLM_BIT) | /* FD */
 		(0 << CPM_CPPCR_PLLN_BIT) |	/* RD=0, NR=2 */
 		(0 << CPM_CPPCR_PLLOD_BIT) |    /* OD=0, NO=1 */
@@ -95,7 +95,7 @@ void pll_add_test(int new_freq)
 	/* Init UHC clock */
 	REG_CPM_UHCCDR = pllout2 / 48000000 - 1;
 	
-	//nf = new_freq * 2 / CFG_EXTAL;
+	//nf = new_freq * 2 / CONFIG_SYS_EXTAL;
 	nf = new_freq / 1000000; //step length is 1M
 	plcr1 = ((nf - 2) << CPM_CPPCR_PLLM_BIT) | /* FD */
 		(10 << CPM_CPPCR_PLLN_BIT) |	/* RD=0, NR=2 */
@@ -122,10 +122,10 @@ void calc_clocks_add_test(void)
 	gd->sys_clk = pllout / div[__cpm_get_hdiv()];
 	gd->per_clk = pllout / div[__cpm_get_pdiv()];
 	gd->mem_clk = pllout / div[__cpm_get_mdiv()];
-	gd->dev_clk = CFG_EXTAL;
+	gd->dev_clk = CONFIG_SYS_EXTAL;
 #else
 	gd->cpu_clk = gd->sys_clk = gd->per_clk = 
-		gd->mem_clk = gd->dev_clk = CFG_EXTAL;
+		gd->mem_clk = gd->dev_clk = CONFIG_SYS_EXTAL;
 #endif
 }
 
@@ -237,7 +237,7 @@ void sdram_init(void)
 
 	int div[] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32};
 
-	cpu_clk = CFG_CPU_SPEED;
+	cpu_clk = CONFIG_SYS_CPU_SPEED;
 	mem_clk = cpu_clk * div[__cpm_get_cdiv()] / div[__cpm_get_mdiv()];
 
 	REG_EMC_BCR = 0;	/* Disable bus release */
@@ -336,10 +336,10 @@ static void calc_clocks(void)
 	gd->sys_clk = pllout / div[__cpm_get_hdiv()];
 	gd->per_clk = pllout / div[__cpm_get_pdiv()];
 	gd->mem_clk = pllout / div[__cpm_get_mdiv()];
-	gd->dev_clk = CFG_EXTAL;
+	gd->dev_clk = CONFIG_SYS_EXTAL;
 #else
 	gd->cpu_clk = gd->sys_clk = gd->per_clk = 
-		gd->mem_clk = gd->dev_clk = CFG_EXTAL;
+		gd->mem_clk = gd->dev_clk = CONFIG_SYS_EXTAL;
 #endif
 }
 
@@ -424,7 +424,7 @@ long int initdram(int board_type)
 
 #define TIMER_CHAN  0
 #define TIMER_FDATA 0xffff  /* Timer full data value */
-#define TIMER_HZ    CFG_HZ
+#define TIMER_HZ    CONFIG_SYS_HZ
 
 #define READ_TIMER  REG_TCU_TCNT(TIMER_CHAN)  /* macro to read the 16 bit timer */
 

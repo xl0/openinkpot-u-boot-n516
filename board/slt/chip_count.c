@@ -37,7 +37,7 @@
 //#define CHIP_COUNT_DEBUG 1
 #undef CHIP_COUNT_DEBUG
 
-#define CFG_EEPROM_DATA_BACKUP_ENABLE 		1
+#define CONFIG_SYS_EEPROM_DATA_BACKUP_ENABLE 		1
 
 #if defined(CFG_EEPROM_AT24C02A)		/* Old board: 256 bytes */
 

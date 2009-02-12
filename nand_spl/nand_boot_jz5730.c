@@ -177,7 +177,7 @@ static void pll_init(void)
 {
 	unsigned int nf, plcr1;
 
-	nf = CFG_CPU_SPEED * 2 / CFG_EXTAL;
+	nf = CONFIG_SYS_CPU_SPEED * 2 / CONFIG_SYS_EXTAL;
 	plcr1 = ((nf-2) << CPM_PLCR1_PLL1FD_BIT) |
 		(0 << CPM_PLCR1_PLL1RD_BIT) |	/* RD=0, NR=2, 1.8432 = 3.6864/2 */
 		(0 << CPM_PLCR1_PLL1OD_BIT) |   /* OD=0, NO=1 */
@@ -419,7 +419,7 @@ void nand_boot(void)
 	/*
 	 * Load U-Boot image from NAND into RAM
 	 */
-	ret = nand_load(CFG_NAND_U_BOOT_OFFS, CFG_NAND_U_BOOT_SIZE,
+	ret = nand_load(CFG_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
 			(uchar *)CFG_NAND_U_BOOT_DST);
 
 	uboot = (void (*)(void))CFG_NAND_U_BOOT_START;

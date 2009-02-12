@@ -163,10 +163,10 @@ static void calc_clocks(void)
 	gd->sys_clk = pllout / div[__cpm_cfcr_sfr()];
 	gd->per_clk = pllout / div[__cpm_cfcr_pfr()];
 	gd->mem_clk = pllout / div[__cpm_cfcr_mfr()];
-	gd->dev_clk = CFG_EXTAL;
+	gd->dev_clk = CONFIG_SYS_EXTAL;
 #else
 	gd->cpu_clk = gd->sys_clk = gd->per_clk = 
-		gd->mem_clk = gd->dev_clk = CFG_EXTAL;
+		gd->mem_clk = gd->dev_clk = CONFIG_SYS_EXTAL;
 #endif
 }
 
@@ -210,7 +210,7 @@ static void pll_init(void)
 		(n2FR[div[3]] << CPM_CFCR_MFR_BIT) |
 		((div[4]-1) << CPM_CFCR_SSIFR_BIT);
 
-	nf = CFG_CPU_SPEED * 2 / CFG_EXTAL;
+	nf = CONFIG_SYS_CPU_SPEED * 2 / CONFIG_SYS_EXTAL;
 
 	plcr1 = ((nf - 2) << CPM_PLCR1_PLL1FD_BIT) | /* FD=NF-2 */
 		(0 << CPM_PLCR1_PLL1RD_BIT) |	   /* RD=0, NR=2, 1.8432 = 3.6864/2 */
@@ -312,12 +312,12 @@ void udelay (unsigned long usec)
 	/* normalize */
 	if (usec >= 1000) {
 		tmo = usec / 1000;
-		tmo *= CFG_HZ;
+		tmo *= CONFIG_SYS_HZ;
 		tmo /= 1000;
 	}
 	else {
 		if (usec >= 1) {
-			tmo = usec * CFG_HZ;
+			tmo = usec * CONFIG_SYS_HZ;
 			tmo /= (1000*1000);
 		}
 		else
@@ -366,11 +366,11 @@ void udelay_masked (unsigned long usec)
 	/* normalize */
 	if (usec >= 1000) {
 		tmo = usec / 1000;
-		tmo *= CFG_HZ;
+		tmo *= CONFIG_SYS_HZ;
 		tmo /= 1000;
 	} else {
 		if (usec > 1) {
-			tmo = usec * CFG_HZ;
+			tmo = usec * CONFIG_SYS_HZ;
 			tmo /= (1000*1000);
 		} else {
 			tmo = 1;
@@ -400,7 +400,7 @@ unsigned long long get_ticks(void)
  */
 ulong get_tbclk (void)
 {
-	return CFG_HZ;
+	return CONFIG_SYS_HZ;
 }
 
 //---------------------------------------------------------------------

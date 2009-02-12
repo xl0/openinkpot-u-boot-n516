@@ -32,18 +32,18 @@
 #define CONFIG_URANUS		1  /* uranus validation board */
 #define CONFIG_FPGA		1  /* uranus is a FPGA board */
 
-#define CFG_EXTAL		8000000		/* EXTAL freq: 8 MHz */
-#define CFG_CPU_SPEED		CFG_EXTAL	/* CPU speed */
+#define CONFIG_SYS_EXTAL		8000000		/* EXTAL freq: 8 MHz */
+#define CONFIG_SYS_CPU_SPEED		CFG_EXTAL	/* CPU speed */
 #define	CFG_HZ			(CFG_CPU_SPEED/(3*256)) /* incrementer freq */
 
-#define CFG_UART_BASE  		UART0_BASE	/* Base of the UART channel */
+#define CONFIG_SYS_UART_BASE  		UART0_BASE	/* Base of the UART channel */
 #define CONFIG_BAUDRATE		9600
-#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
+#define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
 
-#define CONFIG_COMMANDS		((CONFIG_CMD_DFL | CFG_CMD_DHCP) & ~(CFG_CMD_ENV))
+#define CONFIG_COMMANDS		((CONFIG_CMD_DFL | CONFIG_SYS_CMD_DHCP) & ~(CFG_CMD_ENV))
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
@@ -53,7 +53,7 @@
 #define CONFIG_BOOTFILE	        "uImage"	/* file to load */
 #define CONFIG_BOOTARGS		"mem=64M console=ttyS0,9600n8 ip=bootp nfsroot=192.168.1.20:/nfsroot/miniroot rw"
 #define CONFIG_BOOTCOMMAND	"bootp;setenv serverip 192.168.1.20;tftp;bootm"
-#define CFG_AUTOLOAD		"n"		/* No autoload */
+#define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
 
 #define CONFIG_NET_MULTI
 #define CONFIG_ETHADDR		00:50:c2:1e:af:fe    /* Ethernet address */
@@ -63,7 +63,7 @@
  *
  */
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download	*/
-#define CFG_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
+#define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
 
 /*
  * Miscellaneous configurable options
@@ -74,25 +74,25 @@
 #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)  /* Print Buffer Size */
 #define	CFG_MAXARGS		16		/* max number of command args*/
 
-#define CFG_MALLOC_LEN		128*1024
-#define CFG_BOOTPARAMS_LEN	128*1024
+#define CONFIG_SYS_MALLOC_LEN		128*1024
+#define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
 
-#define CFG_SDRAM_BASE		0x80000000     /* Cached addr */
+#define CONFIG_SYS_SDRAM_BASE		0x80000000     /* Cached addr */
 
-#define CFG_INIT_SP_OFFSET	0x400000
+#define CONFIG_SYS_INIT_SP_OFFSET	0x400000
 
 #define	CFG_LOAD_ADDR		0x80600000     /* default load address	*/
 
-#define CFG_MEMTEST_START	0x80100000
-#define CFG_MEMTEST_END		0x80800000
+#define CONFIG_SYS_MEMTEST_START	0x80100000
+#define CONFIG_SYS_MEMTEST_END		0x80800000
 
-#define CFG_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
+#define CONFIG_SYS_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
 
 /*-----------------------------------------------------------------------
  * FLASH and environment organization
  */
-#define CFG_MAX_FLASH_BANKS	1	/* max number of memory banks */
-#define CFG_MAX_FLASH_SECT	(128)	/* max number of sectors on one chip */
+#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* max number of memory banks */
+#define CONFIG_SYS_MAX_FLASH_SECT	(128)	/* max number of sectors on one chip */
 
 #define PHYS_FLASH_1		0xbfc00000 /* Flash Bank #1 */
 
@@ -100,17 +100,17 @@
 #define	CFG_MONITOR_BASE	TEXT_BASE
 #define	CFG_MONITOR_LEN		(192 << 10)
 
-#define CFG_FLASH_BASE		PHYS_FLASH_1
+#define CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1
 
 /* timeout values are in ticks */
-#define CFG_FLASH_ERASE_TOUT	(2 * CFG_HZ) /* Timeout for Flash Erase */
-#define CFG_FLASH_WRITE_TOUT	(2 * CFG_HZ) /* Timeout for Flash Write */
+#define CONFIG_SYS_FLASH_ERASE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Erase */
+#define CONFIG_SYS_FLASH_WRITE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Write */
 
 #define	CFG_ENV_IS_NOWHERE	1
 
 /* Address and size of Primary Environment Sector	*/
-#define CFG_ENV_ADDR		0xBFC40000
-#define CFG_ENV_SIZE		0x20000
+#define CONFIG_SYS_ENV_ADDR		0xBFC40000
+#define CONFIG_SYS_ENV_SIZE		0x20000
 
 /*
  * SDRAM Info.
@@ -134,8 +134,8 @@
 /*-----------------------------------------------------------------------
  * Cache Configuration
  */
-#define CFG_DCACHE_SIZE		16384
-#define CFG_ICACHE_SIZE		16384
-#define CFG_CACHELINE_SIZE	32
+#define CONFIG_SYS_DCACHE_SIZE		16384
+#define CONFIG_SYS_ICACHE_SIZE		16384
+#define CONFIG_SYS_CACHELINE_SIZE	32
 
 #endif	/* __CONFIG_H */

@@ -31,20 +31,20 @@
 #define CONFIG_JZ5730		1  /* Jz5730 Soc */
 #define CONFIG_IPTV		1  /* iptv board */
 
-#define CFG_CPU_SPEED		336000000	/* CPU speed */
+#define CONFIG_SYS_CPU_SPEED		336000000	/* CPU speed */
 
-#define CFG_EXTAL		3686400		/* EXTAL freq: 3.6864 MHz */
+#define CONFIG_SYS_EXTAL		3686400		/* EXTAL freq: 3.6864 MHz */
 #define	CFG_HZ			(CFG_CPU_SPEED/(3*256)) /* incrementer freq */
 
-#define CFG_UART_BASE  		UART0_BASE	/* Base of the UART channel */
+#define CONFIG_SYS_UART_BASE  		UART0_BASE	/* Base of the UART channel */
 #define CONFIG_BAUDRATE		115200
-#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
+#define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
 #define CONFIG_COMMANDS		(CONFIG_CMD_DFL | \
-				 CFG_CMD_ASKENV | \
-                                 CFG_CMD_NAND   | \
-				 CFG_CMD_DHCP	| \
-				 CFG_CMD_PING   )
+				 CONFIG_SYS_CMD_ASKENV | \
+                                 CONFIG_SYS_CMD_NAND   | \
+				 CONFIG_SYS_CMD_DHCP	| \
+				 CONFIG_SYS_CMD_PING   )
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
@@ -56,7 +56,7 @@
 
 #define CONFIG_BOOTARGS		"mem=64M console=ttyS0,115200n8 ip=bootp nfsroot=192.168.1.20:/nfsroot/miniroot rw"
 #define CONFIG_BOOTCOMMAND	"bootp;setenv serverip 192.168.1.20;tftp;bootm"
-#define CFG_AUTOLOAD		"n"		/* No autoload */
+#define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
 
 #define CONFIG_NET_MULTI
 #define CONFIG_ETHADDR		00:50:c2:1e:af:fe    /* Ethernet address */
@@ -66,7 +66,7 @@
  *
  */
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download	*/
-#define CFG_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
+#define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
 
 /*
  * Miscellaneous configurable options
@@ -77,36 +77,36 @@
 #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)  /* Print Buffer Size */
 #define	CFG_MAXARGS		16		/* max number of command args*/
 
-#define CFG_MALLOC_LEN		128*1024
-#define CFG_BOOTPARAMS_LEN	128*1024
+#define CONFIG_SYS_MALLOC_LEN		128*1024
+#define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
 
-#define CFG_SDRAM_BASE		0x80000000     /* Cached addr */
+#define CONFIG_SYS_SDRAM_BASE		0x80000000     /* Cached addr */
 
-#define CFG_INIT_SP_OFFSET	0x400000
+#define CONFIG_SYS_INIT_SP_OFFSET	0x400000
 
 #define	CFG_LOAD_ADDR		0x80600000     /* default load address	*/
 
-#define CFG_MEMTEST_START	0x80100000
-#define CFG_MEMTEST_END		0x80800000
+#define CONFIG_SYS_MEMTEST_START	0x80100000
+#define CONFIG_SYS_MEMTEST_END		0x80800000
 
-#define CFG_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
+#define CONFIG_SYS_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
 
 /*-----------------------------------------------------------------------
  * Environment
  *----------------------------------------------------------------------*/
 #if !defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL)
-#define CFG_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
+#define CONFIG_SYS_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
 #else
-#define CFG_ENV_IS_IN_NAND	1	/* use NAND for environment vars	*/
+#define CONFIG_SYS_ENV_IS_IN_NAND	1	/* use NAND for environment vars	*/
 #endif
 
 /*-----------------------------------------------------------------------
  * NAND FLASH configuration
  */
-#define CFG_MAX_NAND_DEVICE     1
+#define CONFIG_SYS_MAX_NAND_DEVICE     1
 #define NAND_MAX_CHIPS          1
-#define CFG_NAND_BASE           0xB4000000
-#define CFG_NAND_SELECT_DEVICE  1       /* nand driver supports mutipl. chips   */
+#define CONFIG_SYS_NAND_BASE           0xB4000000
+#define CONFIG_SYS_NAND_SELECT_DEVICE  1       /* nand driver supports mutipl. chips   */
 
 /*
  * IPL (Initial Program Loader, integrated inside CPU)
@@ -123,49 +123,49 @@
  * from RAM. Therefore it mustn't (re-)configure the SDRAM controller.
  *
  */
-#define CFG_NAND_U_BOOT_DST	0x80100000	/* Load NUB to this addr	*/
-#define CFG_NAND_U_BOOT_START	CFG_NAND_U_BOOT_DST /* Start NUB from this addr	*/
+#define CONFIG_SYS_NAND_U_BOOT_DST	0x80100000	/* Load NUB to this addr	*/
+#define CONFIG_SYS_NAND_U_BOOT_START	CFG_NAND_U_BOOT_DST /* Start NUB from this addr	*/
 
 /*
  * Define the partitioning of the NAND chip (only RAM U-Boot is needed here)
  */
-#define CFG_NAND_U_BOOT_OFFS	(128 << 10)	/* Offset to RAM U-Boot image	*/
-#define CFG_NAND_U_BOOT_SIZE	(512 << 10)	/* Size of RAM U-Boot image	*/
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	(128 << 10)	/* Offset to RAM U-Boot image	*/
+#define CONFIG_SYS_NAND_U_BOOT_SIZE	(512 << 10)	/* Size of RAM U-Boot image	*/
 
-#ifdef CFG_ENV_IS_IN_NAND
-#define CFG_NAND_BLOCK_SIZE	(16 << 10)	/* NAND chip block size		*/
-#define CFG_ENV_SIZE		CFG_NAND_BLOCK_SIZE
-#define CFG_ENV_OFFSET		(CFG_NAND_U_BOOT_OFFS + CFG_NAND_U_BOOT_SIZE + CFG_NAND_BLOCK_SIZE)	/* environment starts here  */
-#define CFG_ENV_OFFSET_REDUND	(CFG_ENV_OFFSET + CFG_ENV_SIZE)
+#ifdef CONFIG_SYS_ENV_IS_IN_NAND
+#define CONFIG_SYS_NAND_BLOCK_SIZE	(16 << 10)	/* NAND chip block size		*/
+#define CONFIG_SYS_ENV_SIZE		CFG_NAND_BLOCK_SIZE
+#define CONFIG_SYS_ENV_OFFSET		(CFG_NAND_U_BOOT_OFFS + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
+#define CONFIG_SYS_ENV_OFFSET_REDUND	(CFG_ENV_OFFSET + CONFIG_SYS_ENV_SIZE)
 #endif
 
 /*-----------------------------------------------------------------------
  * NOR Flash configuration
  * (Intel Strataflash: 28F128J3A 128Mbit = 128K x 128)
  */
-#define CFG_MAX_FLASH_BANKS	1	/* max # of memory banks	*/
-//#define CFG_FLASH_CFI		1	/* flash is CFI conformant	*/
-//#define CFG_FLASH_CFI_DRIVER	1	/* use common cfi driver	*/
-//#define CFG_FLASH_USE_BUFFER_WRITE 1	/* use buffered writes (20x faster) */
-#define CFG_MAX_FLASH_SECT	2048	/* max # of sectors on one chip	*/
+#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* max # of memory banks	*/
+//#define CONFIG_SYS_FLASH_CFI		1	/* flash is CFI conformant	*/
+//#define CONFIG_SYS_FLASH_CFI_DRIVER	1	/* use common cfi driver	*/
+//#define CONFIG_SYS_FLASH_USE_BUFFER_WRITE 1	/* use buffered writes (20x faster) */
+#define CONFIG_SYS_MAX_FLASH_SECT	2048	/* max # of sectors on one chip	*/
 //#define PHYS_FLASH_SECT_SIZE	(128*1024)	/* Size of a sector (128kB) */
 
 #define PHYS_FLASH_1		0xbf800000   /* Flash Bank #1 */
-#define CFG_FLASH_BASE		PHYS_FLASH_1 /* Flash at 0xbf000000 - 0xbfffffff */
+#define CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1 /* Flash at 0xbf000000 - 0xbfffffff */
 
 #define	CFG_MONITOR_BASE	0xbfc00000
 #define	CFG_MONITOR_LEN		(256*1024)  /* Reserve 256 kB for Monitor */
 
 /* timeout values are in ticks */
-#define CFG_FLASH_ERASE_TOUT	(20*CFG_HZ) /* Timeout for Flash Erase */
-#define CFG_FLASH_WRITE_TOUT	(20*CFG_HZ) /* Timeout for Flash Write */
+#define CONFIG_SYS_FLASH_ERASE_TOUT	(20*CFG_HZ) /* Timeout for Flash Erase */
+#define CONFIG_SYS_FLASH_WRITE_TOUT	(20*CFG_HZ) /* Timeout for Flash Write */
 
 /* Environment settings */
-#ifdef CFG_ENV_IS_IN_FLASH
-#define CFG_ENV_SECT_SIZE	0x10000
-#define CFG_ENV_SIZE		CFG_ENV_SECT_SIZE
-#define CFG_ENV_ADDR		(CFG_MONITOR_BASE + CFG_MONITOR_LEN) /* Environment after Monitor */
-#define CFG_DIRECT_FLASH_TFTP	1	/* allow direct tftp to flash */
+#ifdef CONFIG_SYS_ENV_IS_IN_FLASH
+#define CONFIG_SYS_ENV_SECT_SIZE	0x10000
+#define CONFIG_SYS_ENV_SIZE		CFG_ENV_SECT_SIZE
+#define CONFIG_SYS_ENV_ADDR		(CFG_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN) /* Environment after Monitor */
+#define CONFIG_SYS_DIRECT_FLASH_TFTP	1	/* allow direct tftp to flash */
 #endif
 
 #define CONFIG_ENV_OVERWRITE	1	/* allow overwrite MAC address */
@@ -192,8 +192,8 @@
 /*-----------------------------------------------------------------------
  * Cache Configuration
  */
-#define CFG_DCACHE_SIZE		16384
-#define CFG_ICACHE_SIZE		16384
-#define CFG_CACHELINE_SIZE	32
+#define CONFIG_SYS_DCACHE_SIZE		16384
+#define CONFIG_SYS_ICACHE_SIZE		16384
+#define CONFIG_SYS_CACHELINE_SIZE	32
 
 #endif	/* __CONFIG_H */

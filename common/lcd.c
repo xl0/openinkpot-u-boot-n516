@@ -173,7 +173,7 @@ static inline void console_newline (void)
 }
 
 /*----------------------------------------------------------------------*/
-#ifndef CFG_LCD_LOGOONLY_NOINFO
+#ifndef CONFIG_SYS_LCD_LOGOONLY_NOINFO
 void lcd_putc (const char c)
 {
 	serial_putc(c); 
@@ -214,12 +214,12 @@ void lcd_putc (const char c)
 	}
 	/* NOTREACHED */
 }
-#else         /* CFG_LCD_LOGOONLY_NOINFO, no info printed */
+#else         /* CONFIG_SYS_LCD_LOGOONLY_NOINFO, no info printed */
 void lcd_putc (const char c)
 {
  	serial_putc(c);
 }
-#endif /* CFG_LCD_LOGOONLY_NOINFO */
+#endif /* CONFIG_SYS_LCD_LOGOONLY_NOINFO */
 /*----------------------------------------------------------------------*/
 
 void lcd_puts (const char *s)

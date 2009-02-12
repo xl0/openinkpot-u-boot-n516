@@ -11,7 +11,7 @@
  */
 #include <common.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_NAND) && defined(CONFIG_JZ4740)
+#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) && defined(CONFIG_JZ4740)
 
 #include <nand.h>
 #include <asm/jz4740.h>
@@ -205,11 +205,11 @@ void board_nand_init(struct nand_chip *nand)
 	nand->calculate_ecc = jzsoc_nand_calculate_rs_ecc;
 
         /* Set address of NAND IO lines */
-        nand->IO_ADDR_R = (void __iomem *) CFG_NAND_BASE;
-        nand->IO_ADDR_W = (void __iomem *) CFG_NAND_BASE;
+        nand->IO_ADDR_R = (void __iomem *) CONFIG_SYS_NAND_BASE;
+        nand->IO_ADDR_W = (void __iomem *) CONFIG_SYS_NAND_BASE;
 
         /* 20 us command delay time */
         nand->chip_delay = 20;
 	nand->autooob    = &nand_oob_rs;
 }
-#endif /* (CONFIG_COMMANDS & CFG_CMD_NAND) */
+#endif /* (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) */

@@ -43,10 +43,10 @@
 #endif
 
 #undef UART_BASE
-#ifndef CFG_UART_BASE
+#ifndef CONFIG_SYS_UART_BASE
 #define UART_BASE  UART0_BASE
 #else
-#define UART_BASE  CFG_UART_BASE
+#define UART_BASE  CONFIG_SYS_UART_BASE
 #endif
 
 /******************************************************************************
@@ -96,7 +96,7 @@ void serial_setbrg (void)
 	volatile u8 *uart_dllr = (volatile u8 *)(UART_BASE + OFF_DLLR);
 	u32 baud_div, tmp;
 
-	baud_div = CFG_EXTAL / 16 / CONFIG_BAUDRATE;
+	baud_div = CONFIG_SYS_EXTAL / 16 / CONFIG_BAUDRATE;
 	tmp = *uart_lcr;
 	tmp |= UART_LCR_DLAB;
 	*uart_lcr = tmp;

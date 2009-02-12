@@ -28,14 +28,14 @@
  * Fallowing macro may be used:
  *  CONFIG_LCD                        : LCD support 
  *  LCD_BPP                           : Bits per pixel, 0 = 1, 1 = 2, 2 = 4, 3 = 8
- *  CFG_WHITE_ON_BLACK
+ *  CONFIG_SYS_WHITE_ON_BLACK
  *  CONFIG_LCD_LOGO                   : show logo
- *  CFG_LCD_LOGOONLY_NOINFO           : not display info on lcd screen, only logo
+ *  CONFIG_SYS_LCD_LOGOONLY_NOINFO           : not display info on lcd screen, only logo
  * -----------------------------------------------------------------------
  * bugs:
  * if BMP_LOGO_HEIGHT > (lcd screen height - 2*VIDEO_FONT_HEIGHT),
  * must not print info onto screen,
- * it means should define CFG_LCD_LOGOONLY_NOINFO.
+ * it means should define CONFIG_SYS_LCD_LOGOONLY_NOINFO.
  */
 
 #include <config.h>

@@ -53,7 +53,7 @@ struct eth_device *dev;
 
 #ifdef CONFIG_DRIVER_CS8900
 
-#if (CONFIG_COMMANDS & CFG_CMD_NET)
+#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NET)
 
 #undef DEBUG
 
@@ -105,7 +105,7 @@ static void eth_reset (void)
 	udelay (200000);
 	/* Wait until the chip is reset */
 
-	tmo = get_timer (0) + 1 * CFG_HZ;
+	tmo = get_timer (0) + 1 * CONFIG_SYS_HZ;
 	while ((((us = get_reg_init_bus (PP_SelfSTAT)) & PP_SelfSTAT_InitD) == 0)
 		   && tmo < get_timer (0))
 		/*NOP*/;
@@ -272,7 +272,7 @@ retry:
 #ifdef DEBUG
 		printf ("cs: unable to send packet; retrying...\n");
 #endif
-		for (tmo = get_timer (0) + 5 * CFG_HZ; get_timer (0) < tmo;)
+		for (tmo = get_timer (0) + 5 * CONFIG_SYS_HZ; get_timer (0) < tmo;)
 			/*NOP*/;
 		eth_reset ();
 		eth_reginit ();
@@ -285,7 +285,7 @@ retry:
 		CS8900_RTDATA = *addr++;
 
 	/* wait for transfer to succeed */
-	tmo = get_timer (0) + 5 * CFG_HZ;
+	tmo = get_timer (0) + 5 * CONFIG_SYS_HZ;
 	while ((s = get_reg (PP_TER) & ~0x1F) == 0) {
 		if (get_timer (0) >= tmo)
 			break;
@@ -369,7 +369,7 @@ int jz_enet_initialize(bd_t *bis)
 }
 
 
-#endif	/* COMMANDS & CFG_NET */
+#endif	/* COMMANDS & CONFIG_SYS_NET */
 
 #endif	/* CONFIG_DRIVER_CS8900 */
 #endif  /* CONFIG_JZ4740 */

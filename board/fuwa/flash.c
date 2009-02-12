@@ -49,11 +49,11 @@ ulong flash_init (void)
 	ulong size = 0;
 
 	/* Init: no FLASHes known */
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; ++i) {
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; ++i) {
 		flash_info[i].flash_id = FLASH_UNKNOWN;
 	}
 
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; i++) {
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; i++) {
 		if (i == 0) {
 			size += flash_get_size((vu_long *)CFG_FLASH_BASE, &flash_info[0]);
 		}
@@ -63,7 +63,7 @@ ulong flash_init (void)
 		memset(flash_info[i].protect, 0, flash_info[i].sector_count);
 
 		for (j = 0; j < flash_info[i].sector_count; j++) {
-			flash_info[i].start[j] = CFG_FLASH_BASE + j * FLASH_SECT_SIZE;
+			flash_info[i].start[j] = CONFIG_SYS_FLASH_BASE + j * FLASH_SECT_SIZE;
 		}
 	}
 
@@ -76,7 +76,7 @@ ulong flash_init (void)
 
 	flash_protect ( FLAG_PROTECT_SET,
 			CFG_ENV_ADDR,
-			CFG_ENV_ADDR + CFG_ENV_SIZE - 1, &flash_info[0]);
+			CFG_ENV_ADDR + CONFIG_SYS_ENV_SIZE - 1, &flash_info[0]);
 
 	return size;
 }
@@ -197,7 +197,7 @@ static ulong flash_get_size (vu_long *addr, flash_info_t *info)
 
 int flash_erase (flash_info_t * info, int s_first, int s_last)
 {
-	volatile u8 *base = (volatile u8 *) CFG_FLASH_BASE;
+	volatile u8 *base = (volatile u8 *) CONFIG_SYS_FLASH_BASE;
 	int flag, prot, sect;
 	int rc = ERR_OK;
 	unsigned int timeout;
@@ -271,7 +271,7 @@ int flash_erase (flash_info_t * info, int s_first, int s_last)
 
 static int write_word (flash_info_t * info, ulong dest, unchar data)
 {
-	volatile u8 *base = (volatile u8 *) CFG_FLASH_BASE;
+	volatile u8 *base = (volatile u8 *) CONFIG_SYS_FLASH_BASE;
 	volatile u8 *addr = (volatile u8 *) dest;
 	int rc = ERR_OK;
 	int flag;

@@ -45,7 +45,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #undef DEBUG
 
-#if (CONFIG_COMMANDS & CFG_CMD_NAND)
+#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND)
 extern void nand_init (void);
 #endif
 
@@ -415,7 +415,7 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	onenand_init();
 #endif
 
-#if (CONFIG_COMMANDS & CFG_CMD_NAND)
+#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND)
 	puts ("NAND:");
 	nand_init();		/* go init the NAND */
 #endif

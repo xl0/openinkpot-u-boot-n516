@@ -34,7 +34,7 @@
 
 #include "jz_mmc.h"
 
-#define CFG_MMC_BASE		0x80600000
+#define CONFIG_SYS_MMC_BASE		0x80600000
 static int sd2_0 = 0;
 /*
  * GPIO definition
@@ -602,7 +602,7 @@ int mmc_read(ulong src, uchar *dst, int size)
 	mmc_block_size = MMC_BLOCK_SIZE;
 	mmc_block_address = ~(mmc_block_size - 1);
 
-	src -= CFG_MMC_BASE;
+	src -= CONFIG_SYS_MMC_BASE;
 	end = src + size;
 	part_start = ~mmc_block_address & src;
 	part_end = ~mmc_block_address & end;
@@ -664,7 +664,7 @@ int mmc_write(uchar *src, ulong dst, int size)
 	mmc_block_size = MMC_BLOCK_SIZE;
 	mmc_block_address = ~(mmc_block_size - 1);
 
-	dst -= CFG_MMC_BASE;
+	dst -= CONFIG_SYS_MMC_BASE;
 	end = dst + size;
 	part_start = ~mmc_block_address & dst;
 	part_end = ~mmc_block_address & end;
@@ -720,7 +720,7 @@ ulong mmc_bread(int dev_num, ulong blknr, ulong blkcnt, ulong *dst)
 	ulong src;
 	int mmc_block_size = MMC_BLOCK_SIZE;
 
-	src = blknr * mmc_block_size + CFG_MMC_BASE;
+	src = blknr * mmc_block_size + CONFIG_SYS_MMC_BASE;
 	mmc_read(src, (uchar *)dst, blkcnt*mmc_block_size);
 	return blkcnt;
 }
@@ -1026,7 +1026,7 @@ int mmc_ident(block_dev_desc_t *dev)
 int mmc2info(ulong addr)
 {
 	/* FIXME hard codes to 32 MB device */
-	if (addr >= CFG_MMC_BASE && addr < CFG_MMC_BASE + 0x02000000) {
+	if (addr >= CONFIG_SYS_MMC_BASE && addr < CONFIG_SYS_MMC_BASE + 0x02000000) {
 	return 1; 
 	} 
 	return 0;

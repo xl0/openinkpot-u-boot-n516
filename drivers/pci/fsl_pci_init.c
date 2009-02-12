@@ -325,7 +325,7 @@ void fsl_pci_config_unlock(struct pci_controller *hose)
 
 	pci_hose_read_config_byte(hose, dev, FSL_PCIE_CAP_ID, &pcie_cap);
 	if (pcie_cap != 0x0) {
-		/* PCIe - set CFG_READY bit of Configuration Ready Register */
+		/* PCIe - set CONFIG_SYS_READY bit of Configuration Ready Register */
 		pci_hose_write_config_byte(hose, dev, FSL_PCIE_CFG_RDY, 0x1);
 	} else {
 		/* PCI - clear ACL bit of PBFR */

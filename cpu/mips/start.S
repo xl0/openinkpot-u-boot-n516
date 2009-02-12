@@ -361,18 +361,18 @@ reset:
 	mtc0	zero, CP0_TAGHI
 
 	li	t0, K0BASE
-	ori	t1, t0, CFG_DCACHE_SIZE
+	ori	t1, t0, CONFIG_SYS_DCACHE_SIZE
 1:
 	cache	Index_Store_Tag_D, 0(t0)
 	bne	t0, t1, 1b
-	addiu	t0, t0, CFG_CACHELINE_SIZE
+	addiu	t0, t0, CONFIG_SYS_CACHELINE_SIZE
 
 	li	t0, K0BASE
-	ori	t1, t0, CFG_ICACHE_SIZE
+	ori	t1, t0, CONFIG_SYS_ICACHE_SIZE
 2:
 	cache	Index_Store_Tag_I, 0(t0)
 	bne	t0, t1, 2b
-	addiu	t0, t0, CFG_CACHELINE_SIZE
+	addiu	t0, t0, CONFIG_SYS_CACHELINE_SIZE
 
 	/* Invalidate BTB */
 	mfc0	t0, CP0_CONFIG, 7
@@ -481,21 +481,21 @@ relocate_code:
 	/* flush d-cache */
 	.set	mips32
 	li	t0, KSEG0
-	addi	t1, t0, CFG_DCACHE_SIZE
+	addi	t1, t0, CONFIG_SYS_DCACHE_SIZE
 2:
 	cache	Index_Writeback_Inv_D, 0(t0)
 	bne	t0, t1, 2b
-	addi	t0, CFG_CACHELINE_SIZE
+	addi	t0, CONFIG_SYS_CACHELINE_SIZE
 
 	sync
 
 	/* flush i-cache */
 	li	t0, KSEG0
-	addi	t1, t0, CFG_ICACHE_SIZE
+	addi	t1, t0, CONFIG_SYS_ICACHE_SIZE
 3:
 	cache	Index_Invalidate_I, 0(t0)
 	bne	t0, t1, 3b
-	addi	t0, CFG_CACHELINE_SIZE
+	addi	t0, CONFIG_SYS_CACHELINE_SIZE
 
 	/* Invalidate BTB */
 	mfc0	t0, CP0_CONFIG, 7
@@ -615,12 +615,12 @@ resume_from_hibernate:
 	mtc0	zero, CP0_TAGHI
 
 	li	t0, K0BASE
-	ori	t1, t0, CFG_DCACHE_SIZE
+	ori	t1, t0, CONFIG_SYS_DCACHE_SIZE
 1:
 	cache	Index_Store_Tag_D, 0(t0)
 	cache	Index_Store_Tag_I, 0(t0)
 	bne	t0, t1, 1b
-	addiu	t0, t0, CFG_CACHELINE_SIZE
+	addiu	t0, t0, CONFIG_SYS_CACHELINE_SIZE
 
 	/*
 	 * Init SDRAM

@@ -29,7 +29,7 @@ ulong flash_init (void)
 	int i, j;
 	ulong size = 0;
 
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; i++) {
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; i++) {
 		ulong flashbase = 0;
 
 		if (i == 0)
@@ -41,13 +41,13 @@ ulong flash_init (void)
 			(AMD_MANUFACT & FLASH_VENDMASK) |
 			(AMD_ID_LV320B & FLASH_TYPEMASK);
 		flash_info[i].size = 0x00400000;
-		flash_info[i].sector_count = CFG_MAX_FLASH_SECT;
-		memset (flash_info[i].protect, 0, CFG_MAX_FLASH_SECT);
+		flash_info[i].sector_count = CONFIG_SYS_MAX_FLASH_SECT;
+		memset (flash_info[i].protect, 0, CONFIG_SYS_MAX_FLASH_SECT);
 		for (j = 0; j < 8; j++) {
 			flash_info[i].start[j] = flashbase + j * 0x2000;
 		}
 		flashbase = flashbase + 8 * 0x2000;
-		for (j = 8; j < CFG_MAX_FLASH_SECT; j++) {
+		for (j = 8; j < CONFIG_SYS_MAX_FLASH_SECT; j++) {
 			flash_info[i].start[j] = flashbase + (j-8) * 0x10000;
 		}
 		size += flash_info[i].size;
@@ -62,7 +62,7 @@ ulong flash_init (void)
 
 	flash_protect ( FLAG_PROTECT_SET,
 			CFG_ENV_ADDR,
-			CFG_ENV_ADDR + CFG_ENV_SIZE - 1, &flash_info[0]);
+			CFG_ENV_ADDR + CONFIG_SYS_ENV_SIZE - 1, &flash_info[0]);
 
 	return size;
 }
@@ -110,7 +110,7 @@ void flash_print_info (flash_info_t * info)
 
 int flash_erase (flash_info_t * info, int s_first, int s_last)
 {
-	volatile u16 *base = (volatile u16 *) CFG_FLASH_BASE;
+	volatile u16 *base = (volatile u16 *) CONFIG_SYS_FLASH_BASE;
 	int flag, prot, sect;
 	int rc = ERR_OK;
 	unsigned int timeout;
@@ -184,7 +184,7 @@ int flash_erase (flash_info_t * info, int s_first, int s_last)
 
 static int write_word (flash_info_t * info, ulong dest, ushort data)
 {
-	volatile u16 *base = (volatile u16 *) CFG_FLASH_BASE;
+	volatile u16 *base = (volatile u16 *) CONFIG_SYS_FLASH_BASE;
 	volatile u16 *addr = (volatile u16 *) dest;
 	int rc = ERR_OK;
 	int flag;

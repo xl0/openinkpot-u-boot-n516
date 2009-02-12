@@ -31,28 +31,28 @@
 #define CONFIG_JZ4730		1  /* Jz4730 SoC */
 #define CONFIG_FPRINT		1  /* fprint board */
 
-#define CFG_CPU_SPEED		336000000	/* CPU speed */
+#define CONFIG_SYS_CPU_SPEED		336000000	/* CPU speed */
 
-#define CFG_EXTAL		3686400		/* EXTAL freq: 3.6864 MHz */
+#define CONFIG_SYS_EXTAL		3686400		/* EXTAL freq: 3.6864 MHz */
 #define	CFG_HZ			(CFG_CPU_SPEED/(3*256)) /* incrementer freq */
 
-#define CFG_UART_BASE  		UART2_BASE	/* Base of the UART channel */
+#define CONFIG_SYS_UART_BASE  		UART2_BASE	/* Base of the UART channel */
 #define CONFIG_BAUDRATE		115200
-#define CFG_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
+#define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
 #define CONFIG_COMMANDS		((CONFIG_CMD_DFL & \
 					 ~(CFG_CMD_MEMORY | \
-					   CFG_CMD_LOADS | \
-					   CFG_CMD_LOADB | \
-					   CFG_CMD_BDI | \
-					   CFG_CMD_CONSOLE | \
-					   CFG_CMD_IMI | \
-					   CFG_CMD_IMLS | \
-					   CFG_CMD_ITEST | \
-					   CFG_CMD_NFS | \
-					   CFG_CMD_AUTOSCRIPT)) | \
-				 CFG_CMD_ASKENV | \
-				 CFG_CMD_DHCP )
+					   CONFIG_SYS_CMD_LOADS | \
+					   CONFIG_SYS_CMD_LOADB | \
+					   CONFIG_SYS_CMD_BDI | \
+					   CONFIG_SYS_CMD_CONSOLE | \
+					   CONFIG_SYS_CMD_IMI | \
+					   CONFIG_SYS_CMD_IMLS | \
+					   CONFIG_SYS_CMD_ITEST | \
+					   CONFIG_SYS_CMD_NFS | \
+					   CONFIG_SYS_CMD_AUTOSCRIPT)) | \
+				 CONFIG_SYS_CMD_ASKENV | \
+				 CONFIG_SYS_CMD_DHCP )
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
@@ -63,7 +63,7 @@
 #define CONFIG_BOOTFILE	        "uImage"	/* file to load */
 #define CONFIG_BOOTARGS		"mem=16M console=ttyS2,115200n8 ip=bootp nfsroot=192.168.1.20:/nfsroot/miniroot rw"
 #define CONFIG_BOOTCOMMAND	"setenv bootargs ethaddr=$(ethaddr) $(bootargs);bootp;setenv serverip 192.168.1.20;tftp;bootm"
-#define CFG_AUTOLOAD		"n"		/* No autoload */
+#define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
 
 #define CONFIG_NET_MULTI
 #define CONFIG_ETHADDR		00:51:b6:2d:12:fe    /* Ethernet address */
@@ -73,7 +73,7 @@
  *
  */
 #define CONFIG_LOADS_ECHO	1	/* echo on for serial download	*/
-#define CFG_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
+#define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
 
 /*
  * Miscellaneous configurable options
@@ -84,40 +84,40 @@
 #define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)  /* Print Buffer Size */
 #define	CFG_MAXARGS		16		/* max number of command args*/
 
-#define CFG_MALLOC_LEN		128*1024
-#define CFG_BOOTPARAMS_LEN	128*1024
+#define CONFIG_SYS_MALLOC_LEN		128*1024
+#define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
 
-#define CFG_SDRAM_BASE		0x80000000     /* Cached addr */
+#define CONFIG_SYS_SDRAM_BASE		0x80000000     /* Cached addr */
 
-#define CFG_INIT_SP_OFFSET	0x400000
+#define CONFIG_SYS_INIT_SP_OFFSET	0x400000
 
 #define	CFG_LOAD_ADDR		0x80600000     /* default load address	*/
 
-#define CFG_MEMTEST_START	0x80100000
-#define CFG_MEMTEST_END		0x80800000
+#define CONFIG_SYS_MEMTEST_START	0x80100000
+#define CONFIG_SYS_MEMTEST_END		0x80800000
 
-#define CFG_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
+#define CONFIG_SYS_RX_ETH_BUFFER	16	/* use 16 rx buffers on jz47xx eth */
 
 /*-----------------------------------------------------------------------
  * Flash configuration
  * (AM29LV320DB: 4MB)
  */
-#define CFG_MAX_FLASH_BANKS	1	/* max number of memory banks */
-#define CFG_MAX_FLASH_SECT	71	/* max number of sectors on one chip */
+#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* max number of memory banks */
+#define CONFIG_SYS_MAX_FLASH_SECT	71	/* max number of sectors on one chip */
 
 #define PHYS_FLASH_1		0xbfc00000    /* Flash Bank #1 */
-#define CFG_FLASH_BASE		PHYS_FLASH_1  /* Flash beginning from 0xbfc00000 */
+#define CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1  /* Flash beginning from 0xbfc00000 */
 
 #define	CFG_MONITOR_BASE	0xbfc00000
 #define	CFG_MONITOR_LEN		(128*1024)  /* Reserve 128 kB for Monitor */
 
 /* Environment settings */
-#define CFG_ENV_IS_IN_FLASH	1
-#define CFG_ENV_SECT_SIZE	0x10000 /* Total Size of Environment Sector */
-#define CFG_ENV_SIZE		CFG_ENV_SECT_SIZE
-#define CFG_ENV_ADDR		(CFG_MONITOR_BASE + CFG_MONITOR_LEN) /* Environment after Monitor */
+#define CONFIG_SYS_ENV_IS_IN_FLASH	1
+#define CONFIG_SYS_ENV_SECT_SIZE	0x10000 /* Total Size of Environment Sector */
+#define CONFIG_SYS_ENV_SIZE		CFG_ENV_SECT_SIZE
+#define CONFIG_SYS_ENV_ADDR		(CFG_MONITOR_BASE + CONFIG_SYS_MONITOR_LEN) /* Environment after Monitor */
 
-#define CFG_DIRECT_FLASH_TFTP	1	/* allow direct tftp to flash */
+#define CONFIG_SYS_DIRECT_FLASH_TFTP	1	/* allow direct tftp to flash */
 #define CONFIG_ENV_OVERWRITE	1	/* allow overwrite MAC address */
 
 /*
@@ -142,8 +142,8 @@
 /*-----------------------------------------------------------------------
  * Cache Configuration
  */
-#define CFG_DCACHE_SIZE		16384
-#define CFG_ICACHE_SIZE		16384
-#define CFG_CACHELINE_SIZE	32
+#define CONFIG_SYS_DCACHE_SIZE		16384
+#define CONFIG_SYS_ICACHE_SIZE		16384
+#define CONFIG_SYS_CACHELINE_SIZE	32
 
 #endif	/* __CONFIG_H */

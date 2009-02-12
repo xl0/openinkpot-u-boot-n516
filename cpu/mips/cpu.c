@@ -161,8 +161,8 @@ void flush_icache_all(void)
 	asm volatile ("mtc0 $0, $28"); /* Clear Taglo */
 	asm volatile ("mtc0 $0, $29"); /* Clear TagHi */
 
-	for (addr = K0BASE; addr < K0BASE + CFG_ICACHE_SIZE;
-	     addr += CFG_CACHELINE_SIZE) {
+	for (addr = K0BASE; addr < K0BASE + CONFIG_SYS_ICACHE_SIZE;
+	     addr += CONFIG_SYS_CACHELINE_SIZE) {
 		asm volatile (
 			".set mips3\n\t"
 			" cache %0, 0(%1)\n\t"
@@ -187,8 +187,8 @@ void flush_dcache_all(void)
 {
 	u32 addr;
 
-	for (addr = K0BASE; addr < K0BASE + CFG_DCACHE_SIZE; 
-	     addr += CFG_CACHELINE_SIZE) {
+	for (addr = K0BASE; addr < K0BASE + CONFIG_SYS_DCACHE_SIZE; 
+	     addr += CONFIG_SYS_CACHELINE_SIZE) {
 		asm volatile (
 			".set mips3\n\t"
 			" cache %0, 0(%1)\n\t"

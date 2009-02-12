@@ -79,7 +79,7 @@ static void pll_init(void)
 		(n2FR[div[3]] << CPM_CFCR_LFR_BIT) |
 		(n2FR[div[4]] << CPM_CFCR_MFR_BIT);
 
-	nf = get_cpu_speed() * 2 / CFG_EXTAL + 1;
+	nf = get_cpu_speed() * 2 / CONFIG_SYS_EXTAL + 1;
 
 	plcr1 = ((nf - 2) << CPM_PLCR1_PLL1FD_BIT) | /* FD=NF-2 */
 		(0 << CPM_PLCR1_PLL1RD_BIT) |	   /* RD=0, NR=2, 1.8432 = 3.6864/2 */

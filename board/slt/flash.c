@@ -47,11 +47,11 @@ ulong flash_init(void)
 	ulong size = 0;
 
 	/* Init: no FLASHes known */
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; ++i) {
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; ++i) {
 		flash_info[i].flash_id = FLASH_UNKNOWN;
 	}
 
-	for (i = 0; i < CFG_MAX_FLASH_BANKS; i++) {
+	for (i = 0; i < CONFIG_SYS_MAX_FLASH_BANKS; i++) {
 		if (i == 0) {
 			size += flash_get_size((vu_long *)flash_base, &flash_info[0]);
 		}
@@ -84,7 +84,7 @@ ulong flash_init(void)
   		}
  	} 
 
-#ifdef CFG_ENV_IS_IN_FLASH
+#ifdef CONFIG_SYS_ENV_IS_IN_FLASH
 	/* Protect monitor and environment sectors
 	 */
 	flash_protect ( FLAG_PROTECT_SET,
@@ -94,7 +94,7 @@ ulong flash_init(void)
 
 	flash_protect ( FLAG_PROTECT_SET,
 			CFG_ENV_ADDR,
-			CFG_ENV_ADDR + CFG_ENV_SIZE - 1, &flash_info[0]);
+			CFG_ENV_ADDR + CONFIG_SYS_ENV_SIZE - 1, &flash_info[0]);
 #endif
 
 	return size;

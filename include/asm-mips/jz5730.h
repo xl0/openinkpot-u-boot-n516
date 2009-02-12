@@ -26,10 +26,10 @@ static inline void jz_flush_dcache(void)
 	unsigned long end;
 
 	start = KSEG0;
-	end = start + CFG_DCACHE_SIZE;
+	end = start + CONFIG_SYS_DCACHE_SIZE;
 	while (start < end) {
 		cache_unroll(start,Index_Writeback_Inv_D);
-		start += CFG_CACHELINE_SIZE;
+		start += CONFIG_SYS_CACHELINE_SIZE;
 	}
 }
 
@@ -39,10 +39,10 @@ static inline void jz_flush_icache(void)
 	unsigned long end;
 
 	start = KSEG0;
-	end = start + CFG_ICACHE_SIZE;
+	end = start + CONFIG_SYS_ICACHE_SIZE;
 	while(start < end) {
 		cache_unroll(start,Index_Invalidate_I);
-		start += CFG_CACHELINE_SIZE;
+		start += CONFIG_SYS_CACHELINE_SIZE;
 	}
 }
 
@@ -3306,7 +3306,7 @@ do { 						\
 /* 
  * CPU clocks
  */
-#ifdef CFG_EXTAL
+#ifdef CONFIG_SYS_EXTAL
 #define JZ_EXTAL		CFG_EXTAL
 #else
 #define JZ_EXTAL		3686400

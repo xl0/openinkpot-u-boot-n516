@@ -277,8 +277,8 @@ static int nand_read_page(int block, int page, uchar *dst, uchar *oobbuf)
 	return 0;
 }
 
-#ifndef CFG_NAND_BADBLOCK_PAGE
-#define CFG_NAND_BADBLOCK_PAGE 0 /* NAND bad block was marked at this page in a block, starting from 0 */
+#ifndef CONFIG_SYS_NAND_BADBLOCK_PAGE
+#define CONFIG_SYS_NAND_BADBLOCK_PAGE 0 /* NAND bad block was marked at this page in a block, starting from 0 */
 #endif
 
 static void nand_load(int offs, int uboot_size, uchar *dst)
@@ -298,7 +298,7 @@ static void nand_load(int offs, int uboot_size, uchar *dst)
 	while (blockcopy_count < (uboot_size / block_size)) {
 
 		/* New block is required to check the bad block flag */
-		nand_read_oob(block * page_per_block + CFG_NAND_BADBLOCK_PAGE, oob_buf, oob_size);
+		nand_read_oob(block * page_per_block + CONFIG_SYS_NAND_BADBLOCK_PAGE, oob_buf, oob_size);
 
 		if (oob_buf[bad_block_pos] != 0xff) {
 			block++;
@@ -388,7 +388,7 @@ void nand_boot(void)
 	row_cycle = 2;
 #endif
 
-	page_per_block = (page_size == 2048) ? CFG_NAND_BLOCK_SIZE / page_size : 32;
+	page_per_block = (page_size == 2048) ? CONFIG_SYS_NAND_BLOCK_SIZE / page_size : 32;
 	bad_block_pos = (page_size == 2048) ? 0 : 5;
 	oob_size = page_size / 32;
 	block_size = page_size * page_per_block;
@@ -397,7 +397,7 @@ void nand_boot(void)
 	/*
 	 * Load U-Boot image from NAND into RAM
 	 */
-	nand_load(CFG_NAND_U_BOOT_OFFS, CFG_NAND_U_BOOT_SIZE,
+	nand_load(CFG_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
 		  (uchar *)CFG_NAND_U_BOOT_DST);
 
 	uboot = (void (*)(void))CFG_NAND_U_BOOT_START;

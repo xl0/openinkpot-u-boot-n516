@@ -11,7 +11,7 @@
  */
 #include <common.h>
 
-#if (CONFIG_COMMANDS & CFG_CMD_NAND) && defined(CONFIG_JZ5730)
+#if (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) && defined(CONFIG_JZ5730)
 
 #include <nand.h>
 
@@ -83,11 +83,11 @@ void board_nand_init(struct nand_chip *nand)
         nand->dev_ready = jz_device_ready;
 
         /* Set address of NAND IO lines */
-        nand->IO_ADDR_R = (void __iomem *) CFG_NAND_BASE;
-        nand->IO_ADDR_W = (void __iomem *) CFG_NAND_BASE;
+        nand->IO_ADDR_R = (void __iomem *) CONFIG_SYS_NAND_BASE;
+        nand->IO_ADDR_W = (void __iomem *) CONFIG_SYS_NAND_BASE;
 
         /* 20 us command delay time */
         nand->chip_delay = 20;
 }
 
-#endif /* (CONFIG_COMMANDS & CFG_CMD_NAND) */
+#endif /* (CONFIG_COMMANDS & CONFIG_SYS_CMD_NAND) */
