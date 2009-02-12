@@ -26,8 +26,7 @@
 /************************************************************************/
 /* ** HEADER FILES							*/
 /************************************************************************/
-
-/* #define DEBUG */
+/*#define DEBUG */
 
 #include <config.h>
 #include <common.h>
@@ -64,7 +63,7 @@
 #ifdef CONFIG_LCD_LOGO
 # include <bmp_logo.h>		/* Get logo data, width and height	*/
 # if (CONSOLE_COLOR_WHITE >= BMP_LOGO_OFFSET)
-#  error Default Color Map overlaps with Logo Color Map
+//#  error Default Color Map overlaps with Logo Color Map
 # endif
 #endif
 
@@ -83,6 +82,9 @@ extern void lcd_ctrl_init (void *lcdbase);
 extern void lcd_enable (void);
 static void *lcd_logo (void);
 
+#ifdef CONFIG_JzRISC		  /* JzRISC core */ 
+extern int flush_cache_all(void);
+#endif
 
 #if (LCD_BPP == LCD_COLOR8) || (LCD_BPP == LCD_COLOR16)
 extern void lcd_setcolreg (ushort regno,
@@ -171,13 +173,17 @@ static inline void console_newline (void)
 }
 
 /*----------------------------------------------------------------------*/
-
+#ifndef CFG_LCD_LOGOONLY_NOINFO
 void lcd_putc (const char c)
 {
+	serial_putc(c); 
+
 	if (!lcd_is_enabled) {
-		serial_putc(c);
 		return;
 	}
+
+	if ( BMP_LOGO_HEIGHT > (panel_info.vl_row - 2*VIDEO_FONT_HEIGHT)) 
+		return ;
 
 	switch (c) {
 	case '\r':	console_col = 0;
@@ -208,7 +214,12 @@ void lcd_putc (const char c)
 	}
 	/* NOTREACHED */
 }
-
+#else         /* CFG_LCD_LOGOONLY_NOINFO, no info printed */
+void lcd_putc (const char c)
+{
+ 	serial_putc(c);
+}
+#endif /* CFG_LCD_LOGOONLY_NOINFO */
 /*----------------------------------------------------------------------*/
 
 void lcd_puts (const char *s)
@@ -243,6 +254,7 @@ void lcd_printf(const char *fmt, ...)
 
 static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 {
+
 	uchar *dest;
 	ushort off, row;
 
@@ -273,13 +285,23 @@ static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 #elif LCD_BPP == LCD_COLOR8
 			for (c=0; c<8; ++c) {
 				*d++ = (bits & 0x80) ?
-						lcd_color_fg : lcd_color_bg;
+					lcd_color_fg : lcd_color_bg;
 				bits <<= 1;
 			}
 #elif LCD_BPP == LCD_COLOR16
-			for (c=0; c<16; ++c) {
-				*d++ = (bits & 0x80) ?
-						lcd_color_fg : lcd_color_bg;
+			ushort *m = (ushort *)d;
+			for (c=0; c< 8; ++c) {
+				*m++ = (bits & 0x80) ?
+					lcd_color_fg : lcd_color_bg;
+				d+=2;
+				bits <<= 1;
+			}
+#elif LCD_BPP == LCD_COLOR18
+			uint *m = (uint *)d;
+			for (c=0; c< 8 ; ++c) {
+				*m++ = (bits & 0x80) ?
+					lcd_color_fg : lcd_color_bg;
+			 	d+=4;
 				bits <<= 1;
 			}
 #endif
@@ -288,6 +310,10 @@ static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 		*d  = rest | (*d & ((1 << (8-off)) - 1));
 #endif
 	}
+
+#ifdef CONFIG_JzRISC		  /* JzRISC core */ 
+	flush_cache_all();
+#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -410,10 +436,24 @@ static int lcd_clear (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	test_pattern();
 #else
 	/* set framebuffer to background color */
+#if LCD_BPP == LCD_COLOR16
+	long long i;
+	short *lcdbase_p = (short *)lcd_base;
+	for(i=0;i<lcd_line_length*panel_info.vl_row/2;i++)
+		*lcdbase_p++ = COLOR_MASK(lcd_getbgcolor());
+
+#elif LCD_BPP == LCD_COLOR18
+	long long i;
+	int *lcdbase_p = (int *)lcd_base;
+	for(i=0;i<lcd_line_length*panel_info.vl_row/4;i++)
+		*lcdbase_p++ = COLOR_MASK(lcd_getbgcolor());
+#else
 	memset ((char *)lcd_base,
 		COLOR_MASK(lcd_getbgcolor()),
 		lcd_line_length*panel_info.vl_row);
 #endif
+#endif
+
 	/* Paint the logo and retrieve LCD base address */
 	debug ("[LCD] Drawing the logo...\n");
 	lcd_console_address = lcd_logo ();
@@ -492,7 +532,14 @@ static void lcd_setfgcolor (int color)
 #ifdef CONFIG_ATMEL_LCD
 	lcd_color_fg = color;
 #else
-	lcd_color_fg = color & 0x0F;
+#if LCD_BPP == LCD_COLOR16
+	lcd_color_fg = color & 0xFFFF;
+
+#elif LCD_BPP == LCD_COLOR18
+	lcd_color_fg = color & 0xFFFFFFFF;
+#else
+	lcd_color_fg = color & 0xF;
+#endif
 #endif
 }
 
@@ -503,7 +550,14 @@ static void lcd_setbgcolor (int color)
 #ifdef CONFIG_ATMEL_LCD
 	lcd_color_bg = color;
 #else
-	lcd_color_bg = color & 0x0F;
+#if LCD_BPP == LCD_COLOR16
+	lcd_color_bg = color & 0xFFFF;
+
+#elif LCD_BPP == LCD_COLOR18
+	lcd_color_bg = color & 0xFFFFFFFF;
+#else
+	lcd_color_bg = color & 0xF;
+#endif
 #endif
 }
 
@@ -513,6 +567,7 @@ static void lcd_setbgcolor (int color)
 static int lcd_getfgcolor (void)
 {
 	return lcd_color_fg;
+
 }
 #endif	/* NOT_USED_SO_FAR */
 
@@ -540,6 +595,7 @@ void bitmap_plot (int x, int y)
 	uchar *bmap;
 	uchar *fb;
 	ushort *fb16;
+	uint *fb32;
 #if defined(CONFIG_PXA250)
 	struct pxafb_info *fbi = &panel_info.pxa;
 #elif defined(CONFIG_MPC823)
@@ -567,6 +623,7 @@ void bitmap_plot (int x, int y)
 		WATCHDOG_RESET();
 
 		/* Set color map */
+
 		for (i=0; i<(sizeof(bmp_logo_palette)/(sizeof(ushort))); ++i) {
 			ushort colreg = bmp_logo_palette[i];
 #ifdef CONFIG_ATMEL_LCD
@@ -599,14 +656,27 @@ void bitmap_plot (int x, int y)
 			fb   += panel_info.vl_col;
 		}
 	}
-	else { /* true color mode */
-		fb16 = (ushort *)(lcd_base + y * lcd_line_length + x);
-		for (i=0; i<BMP_LOGO_HEIGHT; ++i) {
-			for (j=0; j<BMP_LOGO_WIDTH; j++) {
-				fb16[j] = bmp_logo_palette[(bmap[j])];
+	else{   /* true color mode */
+		if(NBITS(panel_info.vl_bpix) == 16){
+			fb16 = (ushort *)(lcd_base + y * lcd_line_length + x);
+			for (i=0; i<BMP_LOGO_HEIGHT; ++i) {
+				for (j=0; j<BMP_LOGO_WIDTH; j++) {
+					fb16[j] = bmp_logo_palette[(bmap[j])];
 				}
-			bmap += BMP_LOGO_WIDTH;
-			fb16 += panel_info.vl_col;
+				bmap += BMP_LOGO_WIDTH;
+				fb16 += panel_info.vl_col;
+			}
+		}
+		else{
+			fb32 = (uint *)(lcd_base + y * lcd_line_length + x);
+			for (i=0; i<BMP_LOGO_HEIGHT; ++i) {
+				for (j=0; j<BMP_LOGO_WIDTH; j++) {
+					fb32[j] = bmp_logo_palette[(bmap[j])];
+				}
+				bmap += BMP_LOGO_WIDTH;
+				fb32 += panel_info.vl_col;	
+			}
+		
 		}
 	}
 
@@ -830,6 +900,7 @@ static void *lcd_logo (void)
 
 #ifdef CONFIG_LCD_LOGO
 	bitmap_plot (0, 0);
+	flush_cache_all();
 #endif /* CONFIG_LCD_LOGO */
 
 #ifdef CONFIG_LCD_INFO

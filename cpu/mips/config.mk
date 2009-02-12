@@ -20,19 +20,10 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston,
 # MA 02111-1307 USA
 #
-v=$(shell $(AS) --version | grep 'GNU assembler' | egrep -o '2\.[0-9\.]+' | cut -d. -f2)
-MIPSFLAGS:=$(shell \
-if [ "$v" -lt "14" ]; then \
-	echo "-mcpu=4kc"; \
-else \
-	echo "-march=4kc -mtune=4kc"; \
-fi)
 
-ifneq (,$(findstring 4KCle,$(CROSS_COMPILE)))
-ENDIANNESS = -EL
-else
-ENDIANNESS = -EB
-endif
+MIPSFLAGS = -mtune=r4600 -mips32 -O2
+
+#ENDIANNESS = -EL
 
 MIPSFLAGS += $(ENDIANNESS)
 

@@ -73,6 +73,7 @@ int board_eth_init(bd_t *bis) __attribute((weak, alias("__def_eth_init")));
 
 extern int mv6436x_eth_initialize(bd_t *);
 extern int mv6446x_eth_initialize(bd_t *);
+extern int jz_enet_initialize(bd_t*);
 
 #ifdef CONFIG_API
 extern void (*push_packet)(volatile void *, int);
@@ -529,6 +530,10 @@ int eth_initialize(bd_t *bis)
 #if defined(CONFIG_DRIVER_TI_EMAC)
 	davinci_eth_miiphy_initialize(bis);
 #endif
+#if defined(CONFIG_JZSOC)
+   	jz_enet_initialize(bis);
+#endif
+
 	return 0;
 }
 #endif

@@ -25,6 +25,20 @@
 #include <config.h>
 #include <asm/regdef.h>
 #include <asm/mipsregs.h>
+#include <asm/addrspace.h>
+#include <asm/cacheops.h>
+
+#ifdef CONFIG_JZ4730
+#include <asm/jz4730.h>
+#endif
+
+#ifdef CONFIG_JZ4740
+#include <asm/jz4740.h>
+#endif
+
+#ifdef CONFIG_JZ4750
+#include <asm/jz4750.h>
+#endif
 
 	/*
 	 * For the moment disable interrupts, mark the kernel mode and
@@ -46,7 +60,11 @@
 #ifdef CONFIG_64BIT
 	setup_c0_status ST0_KX 0
 #else
+#ifdef CONFIG_JzRISC
+	setup_c0_status 0x0040FC04 0
+#else
 	setup_c0_status 0 0
+#endif
 #endif
 	.endm
 
@@ -61,6 +79,25 @@
 	.globl _start
 	.text
 _start:
+#if defined(CONFIG_JZ4740)
+#if !defined(CONFIG_NAND_SPL) && !defined(CONFIG_NAND_U_BOOT)
+	.word JZ4740_NORBOOT_CFG	/* fetched during NOR Boot */
+#else
+#if defined(CONFIG_NAND_SPL)
+	.word JZ4740_NANDBOOT_CFG	/* fetched during NAND Boot */
+#endif
+#endif
+#endif /* CONFIG_JZ4740 */
+#if defined(CONFIG_JZ4750)
+#if !defined(CONFIG_NAND_SPL) && !defined(CONFIG_NAND_U_BOOT)
+	.word JZ4750_NORBOOT_CFG	/* fetched during NOR Boot */
+#else
+#if defined(CONFIG_NAND_SPL)
+	.word JZ4750_NANDBOOT_CFG	/* fetched during NAND Boot */
+#endif
+#endif
+#endif /* CONFIG_JZ4750 */
+#if !defined(CONFIG_JzRISC)
 	RVECENT(reset,0)	/* U-boot entry point */
 	RVECENT(reset,1)	/* software reboot */
 #if defined(CONFIG_INCA_IP)
@@ -227,21 +264,71 @@ _start:
 	.word	0x00000000
 #endif /* CONFIG_PURPLE */
 	.align 4
+#endif /* CONFIG_JzRISC */
+
 reset:
+#if !defined(CONFIG_NAND_U_BOOT) || defined(CONFIG_NAND_SPL)
+
+#ifdef CONFIG_JZ4730
+
+	/* Disable interrupts */
+	la	t0, INTC_IMR
+	li	t1, 0xffffffff
+	sw	t1, 0(t0)
+
+	/*
+	 * Clear SCR.HGP
+	 */
+	la	t0, CPM_SCR
+	lw	t1, 0(t0)
+	ori	t1, 0x8
+	xori	t1, 0x8
+	sw	t1, 0(t0)
+
+	/*
+	 * Set usb port0 as host
+	 */
+	la	t0, HARB_HAPOR
+	lw	t1, 0(t0)
+	ori	t1, HARB_HAPOR_UCHSEL
+	sw	t1, 0(t0)
+
+	/*
+	 * Check reset status
+	 */
+	la	t0, CPM_RSTR
+	lw	t1, 0(t0)
+	andi	t1, 0x4
+	bnez	t1, resume_from_hibernate
+	nop
+#endif /* CONFIG_JZ4730 */
+
+#ifndef CONFIG_NAND_SPL
 
 	/* Clear watch registers.
 	 */
 	mtc0	zero, CP0_WATCHLO
 	mtc0	zero, CP0_WATCHHI
+#endif
 
-	/* WP(Watch Pending), SW0/1 should be cleared. */
+#ifdef CONFIG_JzRISC
+	/* IV=1, use the specical interrupt vector (0x200) */
+	li	t1, 0x00800000
+	mtc0	t1, CP0_CAUSE
+#else
+      /* WP(Watch Pending), SW0/1 should be cleared. */
 	mtc0	zero, CP0_CAUSE
+#endif
 
 	setup_c0_status_reset
 
+#ifndef CONFIG_JzRISC
 	/* Init Timer */
 	mtc0	zero, CP0_COUNT
 	mtc0	zero, CP0_COMPARE
+#endif
+
+#endif /* !defined(CONFIG_NAND_U_BOOT) || defined(CONFIG_NAND_SPL) */
 
 #if !defined(CONFIG_SKIP_LOWLEVEL_INIT)
 	/* CONFIG0 register */
@@ -258,33 +345,73 @@ reset:
 	lw	gp, 0(ra)
 
 #if !defined(CONFIG_SKIP_LOWLEVEL_INIT)
+#ifndef CONFIG_JzRISC
 	/* Initialize any external memory.
 	 */
 	la	t9, lowlevel_init
 	jalr	t9
 	nop
+#endif
 
 	/* Initialize caches...
 	 */
+#ifdef CONFIG_JzRISC
+	.set	mips32
+	mtc0	zero, CP0_TAGLO
+	mtc0	zero, CP0_TAGHI
+
+	li	t0, K0BASE
+	ori	t1, t0, CFG_DCACHE_SIZE
+1:
+	cache	Index_Store_Tag_D, 0(t0)
+	bne	t0, t1, 1b
+	addiu	t0, t0, CFG_CACHELINE_SIZE
+
+	li	t0, K0BASE
+	ori	t1, t0, CFG_ICACHE_SIZE
+2:
+	cache	Index_Store_Tag_I, 0(t0)
+	bne	t0, t1, 2b
+	addiu	t0, t0, CFG_CACHELINE_SIZE
+
+	/* Invalidate BTB */
+	mfc0	t0, CP0_CONFIG, 7
+	nop
+	ori	t0, 2
+	mtc0	t0, CP0_CONFIG, 7
+	nop
+
+	.set	mips2
+#else
 	la	t9, mips_cache_reset
 	jalr	t9
 	nop
+#endif
 
 	/* ... and enable them.
 	 */
 	li	t0, CONF_CM_CACHABLE_NONCOHERENT
 	mtc0	t0, CP0_CONFIG
+	nop
 #endif /* !CONFIG_SKIP_LOWLEVEL_INIT */
 
 	/* Set up temporary stack.
 	 */
+#ifndef CONFIG_JzRISC
 #ifdef CONFIG_SYS_INIT_RAM_LOCK_MIPS
 	li	a0, CONFIG_SYS_INIT_SP_OFFSET
 	la	t9, mips_cache_lock
 	jalr	t9
 	nop
 #endif
+#endif
 
+#ifdef CONFIG_NAND_SPL
+	la	sp, 0x80004000
+	la	t9, nand_boot
+	j	t9
+	nop
+#else
 	li	t0, CONFIG_SYS_SDRAM_BASE + CONFIG_SYS_INIT_SP_OFFSET
 	la	sp, 0(t0)
 
@@ -350,6 +477,35 @@ relocate_code:
 
 	/* If caches were enabled, we would have to flush them here.
 	 */
+#ifdef CONFIG_JzRISC
+	/* flush d-cache */
+	.set	mips32
+	li	t0, KSEG0
+	addi	t1, t0, CFG_DCACHE_SIZE
+2:
+	cache	Index_Writeback_Inv_D, 0(t0)
+	bne	t0, t1, 2b
+	addi	t0, CFG_CACHELINE_SIZE
+
+	sync
+
+	/* flush i-cache */
+	li	t0, KSEG0
+	addi	t1, t0, CFG_ICACHE_SIZE
+3:
+	cache	Index_Invalidate_I, 0(t0)
+	bne	t0, t1, 3b
+	addi	t0, CFG_CACHELINE_SIZE
+
+	/* Invalidate BTB */
+	mfc0	t0, CP0_CONFIG, 7
+	nop
+	ori	t0, 2
+	mtc0	t0, CP0_CONFIG, 7
+	nop
+
+	.set	mips0
+#endif
 
 	/* a0 & a1 are already set up for flush_cache(start, size) */
 	la	t9, flush_cache
@@ -412,6 +568,10 @@ in_ram:
 
 	.end	relocate_code
 
+#endif /* CONFIG_NAND_SPL */
+
+#if !defined(CONFIG_JzRISC)
+
 	/* Exception handlers.
 	 */
 romReserved:
@@ -419,3 +579,110 @@ romReserved:
 
 romExcHandle:
 	b	romExcHandle
+#endif
+
+#ifdef CONFIG_JZ4730
+
+/* These are the runtime values, modify them according to your platform. */
+#define PLCR1_VAL     0x1b000520
+#define CFCR_VAL      0x0c526220
+
+#define DMCR_VAL0     0x042a3211
+#define DMCR_VAL1     0x05aa3211 /*(DMCR_VAL0|EMC_DMCR_RFSH|EMC_DMCR_MRSET)*/
+
+#define RTCOR_VAL     0x10
+#define RTCSR_VAL     0x83
+
+	/*
+	 * cpu was reset from hibernate mode
+	 */
+resume_from_hibernate:
+	/*
+	 * Init PLL
+	 */
+	la	t0, 0xB0000000	/* CFCR */
+	li	t1, CFCR_VAL
+	sw	t1, 0(t0)
+
+	la	t0, 0xB0000010	/* PLCR1 */
+	li	t1, PLCR1_VAL
+	sw	t1, 0(t0)
+	nop;nop;nop;nop
+
+	/* Init caches */
+	.set	mips32
+	mtc0	zero, CP0_TAGLO
+	mtc0	zero, CP0_TAGHI
+
+	li	t0, K0BASE
+	ori	t1, t0, CFG_DCACHE_SIZE
+1:
+	cache	Index_Store_Tag_D, 0(t0)
+	cache	Index_Store_Tag_I, 0(t0)
+	bne	t0, t1, 1b
+	addiu	t0, t0, CFG_CACHELINE_SIZE
+
+	/*
+	 * Init SDRAM
+	 */
+	la	t0, 0xB0010070	/* GPALR2 */
+	lw	t1, 0(t0)
+	li	t2, 0x3FFFFFFF
+	and	t1, t2
+	li	t2, 0x40000000
+	or	t1, t2
+	sw	t1, 0(t0)
+
+	la	t0, 0xB0010074	/* GPAUR2 */
+	lw	t1, 0(t0)
+	li	t2, 0xFFFF0000
+	and	t1, t2
+	li	t2, 0x00005555
+	or	t1, t2
+	sw	t1, 0(t0)
+
+	la	t0, 0xB3010000	/* EMC base address */
+
+	li	t1, DMCR_VAL0	/* DMCR */
+	sw	t1, 0x80(t0)
+
+	li	t1, RTCOR_VAL
+	sh	t1, 0x8c(t0)	/* RTCOR */
+
+	li	t1, RTCSR_VAL
+	sh	t1, 0x84(t0)	/* RTCSR */
+
+	/* precharge all chip-selects */
+	ori	t1, t0, 0xa088
+	sb	$0, 0(t1)
+	ori	t1, t0, 0xb088
+	sb	$0, 0(t1)
+
+	/* delay about 200us */
+	li	t1, 0x20000
+1:
+	bnez	t1, 1b
+	sub	t1, 1
+
+	la	t1, DMCR_VAL1	/* DMCR */
+	sw	t1, 0x80(t0)
+
+	/* write sdram mode register for each chip-select */
+	ori	t1, t0, 0xa088
+	sb	$0, 0(t1)
+	ori	t1, t0, 0xb088
+	sb	$0, 0(t1)
+
+	/*
+	 * jump to resume entry point
+	 */
+	la	t0, CPM_SPR
+	lw	t1, 0(t0)
+	li	t0, 0x80000000
+	or	t0, t1
+
+	j	t0
+	nop
+
+#endif /* CONFIG_JZ4730 */
+

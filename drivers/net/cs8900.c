@@ -40,6 +40,7 @@
 #include <command.h>
 #include "cs8900.h"
 #include <net.h>
+#include "asm-mips/jz4740.h"
 
 #undef DEBUG
 
@@ -149,10 +150,23 @@ void eth_halt (void)
 	get_reg_init_bus (PP_ChipID);
 }
 
-int eth_init (bd_t * bd)
+void gpio_init_cs8900(void)
+{
+#ifdef CONFIG_JzRISC
+	__gpio_as_func0(60);             //cs4 
+	__gpio_as_func0(61);             //cs4 
+	__gpio_as_func0(62);             //cs4 
+	__gpio_as_irq_high_level(59);    //irq
+	__gpio_disable_pull(59);         //disable pull
+	REG_EMC_SMCR4 |= (1 << 6);       //16bit
+#ifdef CONFIG_JzRISC
+}
+
+  int eth_init (bd_t * bd)
 {
 	uchar enetaddr[6];
 
+	gpio_init_cs8900();
 	/* verify chip id */
 	if (get_reg_init_bus (PP_ChipID) != 0x630e) {
 		printf ("CS8900 Ethernet chip not found?!\n");

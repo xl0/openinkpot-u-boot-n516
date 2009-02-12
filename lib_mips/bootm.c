@@ -43,6 +43,10 @@ static int	linux_env_idx;
 static void linux_params_init (ulong start, char * commandline);
 static void linux_env_set (char * env_name, char * env_val);
 
+#ifdef CONFIG_JzRISC
+extern void flush_cache_all(void);
+#endif
+
 int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 {
 	void	(*theKernel) (int, char **, char **, int *);
@@ -99,6 +103,11 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 
 	/* we assume that the kernel is in place */
 	printf ("\nStarting kernel ...\n\n");
+
+#ifdef CONFIG_JzRISC
+	/* flush both i&d caches before calling into linux */
+	flush_cache_all();
+#endif
 
 	theKernel (linux_argc, linux_argv, linux_env, 0);
 	/* does not return */

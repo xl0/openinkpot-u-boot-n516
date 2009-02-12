@@ -7,7 +7,7 @@
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundatio; either version 2 of
+# published by the Free Software Foundation; either version 2 of
 # the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -157,7 +157,7 @@ ifeq ($(ARCH),i386)
 CROSS_COMPILE = i386-linux-
 endif
 ifeq ($(ARCH),mips)
-CROSS_COMPILE = mips_4KC-
+CROSS_COMPILE = mipsel-linux-
 endif
 ifeq ($(ARCH),nios)
 CROSS_COMPILE = nios-elf-
@@ -3156,6 +3156,149 @@ incaip_config: unconfig
 
 tb0229_config: unconfig
 	@$(MKCONFIG) $(@:_config=) mips mips tb0229
+#########################################################################
+## MIPS32 Jz47XX
+#########################################################################
+fuwa_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_FUWA 1" >>include/config.h
+	@./mkconfig -a fuwa mips mips fuwa
+
+emurus_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_EMURUS 1" >>include/config.h
+	@./mkconfig -a emurus mips mips emurus
+
+virgo_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_VIRGO 1" >>include/config.h
+	@./mkconfig -a virgo mips mips virgo
+
+virgo_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for virgo"
+	@./mkconfig -a virgo mips mips virgo
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/virgo/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+leo_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_LEO 1" >>include/config.h
+	@./mkconfig -a leo mips mips leo
+
+leo_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for leo"
+	@./mkconfig -a leo mips mips leo
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/leo/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+pavo_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_PAVO 1" >>include/config.h
+	@./mkconfig -a pavo mips mips pavo
+
+pavo_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for pavo"
+	@./mkconfig -a pavo mips mips pavo
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/pavo/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+dipper_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_DIPPER 1" >>include/config.h
+	@./mkconfig -a dipper mips mips dipper
+
+dipper_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for dipper"
+	@./mkconfig -a dipper mips mips dipper
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/dipper/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+uranus_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_URANUS 1" >>include/config.h
+	@./mkconfig -a uranus mips mips uranus
+
+libra_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_LIBRA 1" >>include/config.h
+	@./mkconfig -a libra mips mips libra
+
+fcr_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_FCR 1" >>include/config.h
+	@./mkconfig -a fcr mips mips fcr
+
+fprint_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_FPRINT 1" >>include/config.h
+	@./mkconfig -a fprint mips mips fprint
+
+jdi_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_JDI 1" >>include/config.h
+	@./mkconfig -a jdi mips mips jdi
+
+pmpv1_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_PMPV1 1" >>include/config.h
+	@./mkconfig -a pmpv1 mips mips pmpv1
+
+pmpv1_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for pmpv1"
+	@./mkconfig -a pmpv1 mips mips pmpv1
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/pmpv1/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+pmpv2_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_PMPV2 1" >>include/config.h
+	@./mkconfig -a pmpv2 mips mips pmpv2
+
+pmpv2_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for pmpv2"
+	@./mkconfig -a pmpv2 mips mips pmpv2
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/pmpv2/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+slt_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for slt board(Jz4730 chip-sorting board)"
+	@./mkconfig -a slt mips mips slt
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/slt/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+taurus_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_TAURUS 1" >>include/config.h
+	@./mkconfig -a taurus mips mips taurus
+
+iptv_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_IPTV 1" >>include/config.h
+	@./mkconfig -a iptv mips mips iptv
+
+iptv_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for iptv"
+	@./mkconfig -a iptv mips mips iptv
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/iptv/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
+gps_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_GPS 1" >>include/config.h
+	@./mkconfig -a gps mips mips gps
+
+kaifa_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_KAIFA 1" >>include/config.h
+	@./mkconfig -a kaifa mips mips kaifa
 
 vct_premium_config		\
 vct_premium_small_config	\

@@ -33,6 +33,9 @@ SOBJS-$(CONFIG_INCA_IP)	+= incaip_wdt.o
 COBJS-$(CONFIG_INCA_IP)	+= asc_serial.o incaip_clock.o
 COBJS-$(CONFIG_PURPLE)	+= asc_serial.o
 COBJS-$(CONFIG_SOC_AU1X00) += au1x00_eth.o au1x00_serial.o au1x00_usb_ohci.o
+COBJS-$(CONFIG_JZSOC)	+= jz4730.o jz4740.o jz5730.o jz_lcd.o jz_serial.o \
+	jz_eth.o jz_i2c.o jz_mmc.o jz4730_nand.o jz4740_cpm_test.o \
+	jz5730_nand.o jz4740_nand.o jz_cs8900.o jz4750.o
 
 SRCS	:= $(START:.o=.S) $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
 OBJS	:= $(addprefix $(obj),$(SOBJS-y) $(COBJS-y))

@@ -29,6 +29,8 @@
 #include <asm/addrspace.h>
 #include <asm/cacheops.h>
 
+#ifndef CONFIG_JzRISC
+
 #define RA		t8
 
 /*
@@ -329,3 +331,6 @@ mips_cache_lock:
 
 	.end	mips_cache_lock
 #endif /* CONFIG_SYS_INIT_RAM_LOCK_MIPS */
+
+#endif /* CONFIG_JzRISC */
+

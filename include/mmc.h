@@ -26,6 +26,13 @@
 #ifndef _MMC_H_
 #define _MMC_H_
 
+#ifdef CONFIG_JZ4730
+#include <asm-mips/jz4730.h>
+#endif
+#ifdef CONFIG_JZ4740
+#include <asm-mips/jz4740.h>
+#endif
+
 #include <linux/list.h>
 
 #define SD_VERSION_SD	0x20000

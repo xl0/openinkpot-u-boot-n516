@@ -684,11 +684,20 @@ LIST_au1xx0_el="	\
 	dbau1550_el	\
 	pb1000		\
 "
+LIST_jz_el="	\
+	uranus		emurus		libra		fcr		\
+	fprint		jdi		pmpv1		pmpv2		\
+	pmpv1_nand	pmpv2_nand	taurus		iptv		\
+	leo		leo_nand	pavo		pavo_nand	\
+	virgo		virgo_nand	dipper		dipper_nand	\
+	fuwa								\
+"
 
 LIST_mips_el="			\
 	${LIST_mips4kc_el}	\
 	${LIST_mips5kc_el}	\
 	${LIST_au1xx0_el}	\
+	${LIST_jz_el}		\
 "
 
 #########################################################################
