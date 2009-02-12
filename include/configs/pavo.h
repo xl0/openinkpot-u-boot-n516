@@ -31,6 +31,9 @@
 #define CONFIG_JZ4740		1  /* Jz4740 SoC */
 #define CONFIG_PAVO		1  /* PAVO validation board */
 
+#define CONFIG_SKIP_LOWLEVEL_INIT	1
+#undef  CONFIG_SKIP_RELOCATE_UBOOT
+
 #define CONFIG_LCD                 /* LCD support */
 #define CONFIG_JZLCD_SAMSUNG_LTP400WQF02_18BIT
 #define LCD_BPP			5  /* 5: 18,24,32 bits per pixel */
@@ -174,6 +177,7 @@
 
 /* The following #defines are needed to get flash environment right */
 #define	CFG_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
+#define	CFG_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
 #define	CFG_MONITOR_LEN		(256*1024)  /* Reserve 256 kB for Monitor */
 
 #define CFG_FLASH_BASE		PHYS_FLASH_1
