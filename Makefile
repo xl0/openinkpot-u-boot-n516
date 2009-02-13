@@ -3205,6 +3205,18 @@ pavo_nand_config	:	unconfig
 	@echo "TEXT_BASE = 0x80100000" > $(obj)board/pavo/config.tmp
 	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
 
+n516_config		: 	unconfig
+	@ >include/config.h
+	@echo "#define CONFIG_N516 1" >>include/config.h
+	@./mkconfig -a n516 mips mips n516
+
+n516_nand_config	:	unconfig
+	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
+	@echo "Compile NAND boot image for n516"
+	@./mkconfig -a n516 mips mips n516
+	@echo "TEXT_BASE = 0x80100000" > $(obj)board/n516/config.tmp
+	@echo "CONFIG_NAND_U_BOOT = y" >> $(obj)include/config.mk
+
 dipper_config		: 	unconfig
 	@ >include/config.h
 	@echo "#define CONFIG_DIPPER 1" >>include/config.h

@@ -690,7 +690,7 @@ LIST_jz_el="	\
 	pmpv1_nand	pmpv2_nand	taurus		iptv		\
 	leo		leo_nand	pavo		pavo_nand	\
 	virgo		virgo_nand	dipper		dipper_nand	\
-	fuwa								\
+	fuwa		n516						\
 "
 
 LIST_mips_el="			\
