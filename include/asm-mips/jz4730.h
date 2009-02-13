@@ -5155,7 +5155,7 @@ do { 						\
  * CPU clocks
  */
 #ifdef CONFIG_SYS_EXTAL
-#define JZ_EXTAL		CFG_EXTAL
+#define JZ_EXTAL		CONFIG_SYS_EXTAL
 #else
 #define JZ_EXTAL		3686400
 #endif

@@ -15,9 +15,10 @@
 
 #include <nand.h>
 #include <asm/jz4740.h>
+#include <asm/io.h>
 
-static struct nand_oobinfo nand_oob_rs = {
-	.useecc = MTD_NANDECC_AUTOPLACE,
+/*
+static struct nand_ecclayout nand_oob_rs = {
 	.eccbytes = 36,
 	.eccpos = {
 		6,  7,  8,  9,  10, 11, 12, 13,
@@ -27,6 +28,8 @@ static struct nand_oobinfo nand_oob_rs = {
 		38, 39, 40, 41},
 	.oobfree = { {2, 4}, {42, 22} }
 };
+*/
+
 
 #define PAR_SIZE 9
 #define __nand_ecc_enable()    (REG_EMC_NFECR = EMC_NFECR_ECCE | EMC_NFECR_ERST )
@@ -39,34 +42,31 @@ static struct nand_oobinfo nand_oob_rs = {
 #define __nand_ecc_encode_sync() while (!(REG_EMC_NFINTS & EMC_NFINTS_ENCF))
 #define __nand_ecc_decode_sync() while (!(REG_EMC_NFINTS & EMC_NFINTS_DECF))
 
-static void jz_hwcontrol(struct mtd_info *mtd, int cmd)
+static void jz_hwcontrol(struct mtd_info *mtd, int dat, 
+			 unsigned int ctrl)
 {
 	struct nand_chip *this = (struct nand_chip *)(mtd->priv);
-	switch (cmd) {
-		case NAND_CTL_SETNCE:
+	unsigned int nandaddr = (unsigned int)this->IO_ADDR_W;
+
+	if (ctrl & NAND_CTRL_CHANGE) {
+		if ( ctrl & NAND_ALE )
+			nandaddr = (unsigned int)((unsigned long)(this->IO_ADDR_W) | 0x00010000);
+		else
+			nandaddr = (unsigned int)((unsigned long)(this->IO_ADDR_W) & ~0x00010000);
+
+		if ( ctrl & NAND_CLE )
+			nandaddr = nandaddr | 0x00008000;
+		else
+			nandaddr = nandaddr & ~0x00008000;
+		if ( ctrl & NAND_NCE )
 			REG_EMC_NFCSR |= EMC_NFCSR_NFCE1;
-			break;
-
-		case NAND_CTL_CLRNCE:
+		else
 			REG_EMC_NFCSR &= ~EMC_NFCSR_NFCE1;
-			break;
-
-		case NAND_CTL_SETCLE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) | 0x00008000);
-			break;
-
-		case NAND_CTL_CLRCLE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) & ~0x00008000);
-			break;
-
-		case NAND_CTL_SETALE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) | 0x00010000);
-			break;
-
-		case NAND_CTL_CLRALE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) & ~0x00010000);
-			break;
 	}
+
+	this->IO_ADDR_W = (void __iomem *)nandaddr;
+	if (dat != NAND_CMD_NONE)
+		writeb(dat, this->IO_ADDR_W);
 }
 
 static int jz_device_ready(struct mtd_info *mtd)
@@ -112,10 +112,11 @@ static int jzsoc_nand_calculate_rs_ecc(struct mtd_info* mtd, const u_char* dat,
 
 static void jzsoc_nand_enable_rs_hwecc(struct mtd_info* mtd, int mode)
 {
+	REG_EMC_NFINTS = 0x0;
+
  	__nand_ecc_enable();
 	__nand_select_rs_ecc();
 
-	REG_EMC_NFINTS = 0x0;
 	if (NAND_ECC_READ == mode){
 		__nand_rs_ecc_decoding();
 	}
@@ -192,17 +193,20 @@ static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 /*
  * Main initialization routine
  */
-void board_nand_init(struct nand_chip *nand)
+int board_nand_init(struct nand_chip *nand)
 {
 	jz_device_setup();
 
-	nand->eccmode = NAND_ECC_HW9_512;	/* FIXME: should use NAND_ECC_SOFT */
-        nand->hwcontrol = jz_hwcontrol;
+        nand->cmd_ctrl = jz_hwcontrol;
         nand->dev_ready = jz_device_ready;
 	
-	nand->correct_data  = jzsoc_nand_rs_correct_data;
-	nand->enable_hwecc  = jzsoc_nand_enable_rs_hwecc;
-	nand->calculate_ecc = jzsoc_nand_calculate_rs_ecc;
+	nand->ecc.mode = NAND_ECC_HW;
+	nand->ecc.size = 512;
+	nand->ecc.bytes = 9;
+//	nand->ecc.layout = &nand_oob_rs;
+	nand->ecc.correct  = jzsoc_nand_rs_correct_data;
+	nand->ecc.hwctl  = jzsoc_nand_enable_rs_hwecc;
+	nand->ecc.calculate = jzsoc_nand_calculate_rs_ecc;
 
         /* Set address of NAND IO lines */
         nand->IO_ADDR_R = (void __iomem *) CONFIG_SYS_NAND_BASE;
@@ -210,6 +214,7 @@ void board_nand_init(struct nand_chip *nand)
 
         /* 20 us command delay time */
         nand->chip_delay = 20;
-	nand->autooob    = &nand_oob_rs;
+
+	return 0;
 }
 #endif /* defined(CONFIG_CMD_NAND) */

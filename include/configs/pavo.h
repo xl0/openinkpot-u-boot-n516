@@ -45,16 +45,18 @@
 
 #define CONFIG_SYS_CPU_SPEED		336000000	/* CPU clock: 336 MHz */
 #define CONFIG_SYS_EXTAL		12000000	/* EXTAL freq: 12 MHz */
-#define	CFG_HZ			(CFG_EXTAL/256) /* incrementer freq */
+#define	CONFIG_SYS_HZ			(CONFIG_SYS_EXTAL/256) /* incrementer freq */
 
 #define CONFIG_SYS_UART_BASE  		UART0_BASE	/* Base of the UART channel */
 
 #define CONFIG_BAUDRATE		57600
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
+
 #define CONFIG_MMC      	1
 #define CONFIG_FAT      	1    
 #define CONFIG_SUPPORT_VFAT 	1
+
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -68,6 +70,7 @@
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
 
+#define CONFIG_DOS_PARTITION
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
@@ -79,7 +82,7 @@
 #define CONFIG_BOOTCOMMAND	"nand read 0x80600000 0x400000 0x300000;bootm"
 #define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
 
-//#define CONFIG_NET_MULTI
+#define CONFIG_NET_MULTI
 
 #define CONFIG_DRIVER_CS8900      1
 #define CS8900_BASE             (0xa8000000)
@@ -97,11 +100,11 @@
 /*
  * Miscellaneous configurable options
  */
-#define	CFG_LONGHELP				/* undef to save memory      */
-#define	CFG_PROMPT		"PAVO # "	/* Monitor Command Prompt    */
-#define	CFG_CBSIZE		256		/* Console I/O Buffer Size   */
-#define	CFG_PBSIZE (CFG_CBSIZE+sizeof(CFG_PROMPT)+16)  /* Print Buffer Size */
-#define	CFG_MAXARGS		16		/* max number of command args*/
+#define	CONFIG_SYS_LONGHELP				/* undef to save memory      */
+#define	CONFIG_SYS_PROMPT		"PAVO # "	/* Monitor Command Prompt    */
+#define	CONFIG_SYS_CBSIZE		256		/* Console I/O Buffer Size   */
+#define	CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)  /* Print Buffer Size */
+#define	CONFIG_SYS_MAXARGS		16		/* max number of command args*/
 
 #define CONFIG_SYS_MALLOC_LEN		128*1024
 #define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
@@ -110,7 +113,7 @@
 
 #define CONFIG_SYS_INIT_SP_OFFSET	0x400000
 
-#define	CFG_LOAD_ADDR		0x80600000     /* default load address	*/
+#define	CONFIG_SYS_LOAD_ADDR		0x80600000     /* default load address	*/
 
 #define CONFIG_SYS_MEMTEST_START	0x80100000
 #define CONFIG_SYS_MEMTEST_END		0x80800000
@@ -121,9 +124,9 @@
  * Environment
  *----------------------------------------------------------------------*/
 #if !defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL)
-#define CONFIG_SYS_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
+#define CONFIG_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
 #else
-#define CONFIG_SYS_ENV_IS_IN_NAND	1	/* use NAND for environment vars	*/
+#define CONFIG_ENV_IS_IN_NAND	1	/* use NAND for environment vars	*/
 #endif
 
 /*-----------------------------------------------------------------------
@@ -150,7 +153,7 @@
  *
  */
 #define CONFIG_SYS_NAND_U_BOOT_DST	0x80100000	/* Load NUB to this addr	*/
-#define CONFIG_SYS_NAND_U_BOOT_START	CFG_NAND_U_BOOT_DST /* Start NUB from this addr	*/
+#define CONFIG_SYS_NAND_U_BOOT_START	CONFIG_SYS_NAND_U_BOOT_DST /* Start NUB from this addr	*/
 
 /*
  * Define the partitioning of the NAND chip (only RAM U-Boot is needed here)
@@ -161,10 +164,10 @@
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(256 << 10)	/* NAND chip block size		*/
 #define CONFIG_SYS_NAND_BADBLOCK_PAGE	127		/* NAND bad block was marked at this page in a block, starting from 0 */
 
-#ifdef CONFIG_SYS_ENV_IS_IN_NAND
-#define CONFIG_SYS_ENV_SIZE		CFG_NAND_BLOCK_SIZE
-#define CONFIG_SYS_ENV_OFFSET		(CFG_NAND_BLOCK_SIZE + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
-#define CONFIG_SYS_ENV_OFFSET_REDUND	(CFG_ENV_OFFSET + CONFIG_SYS_ENV_SIZE)
+#ifdef CONFIG_ENV_IS_IN_NAND
+#define CONFIG_ENV_SIZE		CONFIG_SYS_NAND_BLOCK_SIZE
+#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_BLOCK_SIZE + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
+#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
 #endif
 
 
@@ -177,9 +180,9 @@
 #define PHYS_FLASH_1		0xa8000000 /* Flash Bank #1 */
 
 /* The following #defines are needed to get flash environment right */
-#define	CFG_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
-#define	CFG_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
-#define	CFG_MONITOR_LEN		(256*1024)  /* Reserve 256 kB for Monitor */
+#define	CONFIG_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
+#define	CONFIG_SYS_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
+#define	CONFIG_SYS_MONITOR_LEN		(256*1024)  /* Reserve 256 kB for Monitor */
 
 #define CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1
 
@@ -187,10 +190,10 @@
 #define CONFIG_SYS_FLASH_ERASE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Erase */
 #define CONFIG_SYS_FLASH_WRITE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Write */
 
-#ifdef CONFIG_SYS_ENV_IS_IN_FLASH
-#define	CFG_ENV_IS_NOWHERE	1
-#define CONFIG_SYS_ENV_ADDR		0xa8040000
-#define CONFIG_SYS_ENV_SIZE		0x20000
+#ifdef CONFIG_ENV_IS_IN_FLASH
+#define	CONFIG_ENV_IS_NOWHERE	1
+#define CONFIG_ENV_ADDR		0xa8040000
+#define CONFIG_ENV_SIZE		0x20000
 #endif
 
 /*-----------------------------------------------------------------------

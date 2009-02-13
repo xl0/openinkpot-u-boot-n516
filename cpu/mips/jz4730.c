@@ -46,7 +46,7 @@ static void calc_clocks(void)
 	nr = __cpm_plcr1_rd() + 2;
 	nd = od[__cpm_plcr1_od()];
 
-	pllout = (CFG_EXTAL / (nr * nd)) * nf;
+	pllout = (CONFIG_SYS_EXTAL / (nr * nd)) * nf;
 
 	gd->cpu_clk = pllout / div[__cpm_cfcr_ifr()];
 	gd->sys_clk = pllout / div[__cpm_cfcr_sfr()];
@@ -184,7 +184,7 @@ static void pll_init(void)
 	int nf;
 
 	cfcr = CPM_CFCR_CKOEN1;
-	cfcr |=  ((CFG_CPU_SPEED/48000000 - 1) << 25); /* USB clock divider */
+	cfcr |=  ((CONFIG_SYS_CPU_SPEED/48000000 - 1) << 25); /* USB clock divider */
 
 	cfcr |= (n2FR[div[0]] << CPM_CFCR_IFR_BIT) | 
 		(n2FR[div[1]] << CPM_CFCR_SFR_BIT) | 

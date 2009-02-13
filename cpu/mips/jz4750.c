@@ -55,7 +55,7 @@ void pll_init(void)
 		(n2FR[div[3]] << CPM_CPCCR_MDIV_BIT) |
 		(n2FR[div[4]] << CPM_CPCCR_LDIV_BIT);
 
-	pllout2 = (cfcr & CPM_CPCCR_PCS) ? CONFIG_SYS_CPU_SPEED : (CFG_CPU_SPEED / 2);
+	pllout2 = (cfcr & CPM_CPCCR_PCS) ? CONFIG_SYS_CPU_SPEED : (CONFIG_SYS_CPU_SPEED / 2);
 
 	/* Init USB Host clock, pllout2 must be n*48MHz */
 	REG_CPM_UHCCDR = pllout2 / 48000000 - 1;

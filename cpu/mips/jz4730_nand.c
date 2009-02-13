@@ -17,34 +17,32 @@
 
 #include <asm/jz4730.h>
 
-static void jz_hwcontrol(struct mtd_info *mtd, int cmd)
+static void jz_hwcontrol(struct mtd_info *mtd, int dat, 
+			 unsigned int ctrl)
 {
 	struct nand_chip *this = (struct nand_chip *)(mtd->priv);
-	switch (cmd) {
-		case NAND_CTL_SETNCE:
+	unsigned int nandaddr = (unsigned int)this->IO_ADDR_W;
+
+	if (ctrl & NAND_CTRL_CHANGE) {
+		if ( ctrl & NAND_ALE )
+			nandaddr = (unsigned int)((unsigned long)(this->IO_ADDR_W) | 0x00080000);
+		else
+			nandaddr = (unsigned int)((unsigned long)(this->IO_ADDR_W) & ~0x00080000);
+
+		if ( ctrl & NAND_CLE )
+			nandaddr = nandaddr | 0x00040000;
+		else
+			nandaddr = nandaddr & ~0x00040000;
+		if ( ctrl & NAND_NCE )
 			REG_EMC_NFCSR |= EMC_NFCSR_FCE;
-			break;
-
-		case NAND_CTL_CLRNCE:
+		else
 			REG_EMC_NFCSR &= ~EMC_NFCSR_FCE;
-			break;
-
-		case NAND_CTL_SETCLE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) | 0x00040000);
-			break;
-
-		case NAND_CTL_CLRCLE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) & ~0x00040000);
-			break;
-
-		case NAND_CTL_SETALE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) | 0x00080000);
-			break;
-
-		case NAND_CTL_CLRALE:
-			this->IO_ADDR_W = (void __iomem *)((unsigned long)(this->IO_ADDR_W) & ~0x00080000);
-			break;
 	}
+
+	this->IO_ADDR_W = (void __iomem *)nandaddr;
+	if (dat != NAND_CMD_NONE)
+		writeb(dat , this->IO_ADDR_W);
+
 }
 
 static int jz_device_ready(struct mtd_info *mtd)
@@ -79,8 +77,8 @@ void board_nand_init(struct nand_chip *nand)
 {
 	jz_device_setup();
 
-	nand->eccmode = NAND_ECC_NONE;	/* FIXME: should use NAND_ECC_SOFT */
-        nand->hwcontrol = jz_hwcontrol;
+	nand->ecc.mode = NAND_ECC_NONE;	/* FIXME: should use NAND_ECC_SOFT */
+        nand->cmd_ctrl = jz_hwcontrol;
         nand->dev_ready = jz_device_ready;
 
         /* Set address of NAND IO lines */

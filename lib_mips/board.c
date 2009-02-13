@@ -411,17 +411,16 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	nand_init ();		/* go init the NAND */
 #endif
 
+puts("NAND initialized\n");
+
+
 #if defined(CONFIG_CMD_ONENAND)
 	onenand_init();
 #endif
 
-#if defined(CONFIG_CMD_NAND)
-	puts ("NAND:");
-	nand_init();		/* go init the NAND */
-#endif
-
 	/* relocate environment function pointers etc. */
 	env_relocate();
+	puts("env relocated\n");
 
 	/* IP Address */
 	bd->bi_ip_addr = getenv_IPaddr("ipaddr");
@@ -436,12 +435,15 @@ void board_init_r (gd_t *id, ulong dest_addr)
 /** leave this here (after malloc(), environment and PCI are working) **/
 	/* Initialize devices */
 	devices_init ();
+puts("devices initialized\n");
 
 	jumptable_init ();
 
 	/* Initialize the console (after the relocation and devices init) */
 	console_init_r ();
 /** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** **/
+
+puts("console initialized\n");
 
 	/* Initialize from environment */
 	if ((s = getenv ("loadaddr")) != NULL) {

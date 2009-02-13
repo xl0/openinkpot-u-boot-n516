@@ -66,7 +66,7 @@
 		: "r" (base),					\
 		  "i" (op));
 
-
+#ifndef CONFIG_NAND_SPL
 
 void __attribute__((weak)) _machine_restart(void)
 {
@@ -142,6 +142,7 @@ void write_one_tlb(int index, u32 pagemask, u32 hi, u32 low0, u32 low1)
 	write_c0_index(index);
 	tlb_write_indexed();
 }
+#endif
 
 int cpu_eth_init(bd_t *bis)
 {
@@ -161,7 +162,7 @@ void flush_icache_all(void)
 	asm volatile ("mtc0 $0, $28"); /* Clear Taglo */
 	asm volatile ("mtc0 $0, $29"); /* Clear TagHi */
 
-	for (addr = K0BASE; addr < K0BASE + CONFIG_SYS_ICACHE_SIZE;
+	for (addr = KSEG0; addr < KSEG0 + CONFIG_SYS_ICACHE_SIZE;
 	     addr += CONFIG_SYS_CACHELINE_SIZE) {
 		asm volatile (
 			".set mips3\n\t"
@@ -187,7 +188,7 @@ void flush_dcache_all(void)
 {
 	u32 addr;
 
-	for (addr = K0BASE; addr < K0BASE + CONFIG_SYS_DCACHE_SIZE; 
+	for (addr = KSEG0; addr < KSEG0 + CONFIG_SYS_DCACHE_SIZE; 
 	     addr += CONFIG_SYS_CACHELINE_SIZE) {
 		asm volatile (
 			".set mips3\n\t"

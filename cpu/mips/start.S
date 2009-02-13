@@ -360,14 +360,14 @@ reset:
 	mtc0	zero, CP0_TAGLO
 	mtc0	zero, CP0_TAGHI
 
-	li	t0, K0BASE
+	li	t0, KSEG0
 	ori	t1, t0, CONFIG_SYS_DCACHE_SIZE
 1:
 	cache	Index_Store_Tag_D, 0(t0)
 	bne	t0, t1, 1b
 	addiu	t0, t0, CONFIG_SYS_CACHELINE_SIZE
 
-	li	t0, K0BASE
+	li	t0, KSEG0
 	ori	t1, t0, CONFIG_SYS_ICACHE_SIZE
 2:
 	cache	Index_Store_Tag_I, 0(t0)
@@ -614,7 +614,7 @@ resume_from_hibernate:
 	mtc0	zero, CP0_TAGLO
 	mtc0	zero, CP0_TAGHI
 
-	li	t0, K0BASE
+	li	t0, KSEG0
 	ori	t1, t0, CONFIG_SYS_DCACHE_SIZE
 1:
 	cache	Index_Store_Tag_D, 0(t0)

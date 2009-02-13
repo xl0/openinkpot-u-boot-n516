@@ -159,7 +159,7 @@ void gpio_init_cs8900(void)
 	__gpio_as_irq_high_level(59);    //irq
 	__gpio_disable_pull(59);         //disable pull
 	REG_EMC_SMCR4 |= (1 << 6);       //16bit
-#ifdef CONFIG_JzRISC
+#endif /* CONFIG_JzRISC */
 }
 
   int eth_init (bd_t * bd)

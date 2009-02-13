@@ -69,8 +69,8 @@ extern void serial_puts(const char *s);
 /*
  * Init SDRAM memory.
  */
-#define CPU_CLK (CFG_CPU_SPEED)
-#define MEM_CLK (CFG_CPU_SPEED/3)
+#define CPU_CLK (CONFIG_SYS_CPU_SPEED)
+#define MEM_CLK (CONFIG_SYS_CPU_SPEED/3)
 
 static void sdram_init(void)
 {
@@ -195,7 +195,7 @@ static void pll_init(void)
 	 * 0x10455550 -> 1:8:8:8:8
 	 * 0x10466660 -> 1:12:12:12:12
 	 */
-	REG_CPM_CFCR = 0x00422220 | (((CFG_CPU_SPEED/48000000) - 1) << 25);
+	REG_CPM_CFCR = 0x00422220 | (((CONFIG_SYS_CPU_SPEED/48000000) - 1) << 25);
 
 	/* PLL out frequency */
 	REG_CPM_PLCR1 = plcr1;
@@ -203,16 +203,16 @@ static void pll_init(void)
 
 static void gpio_init(void)
 {
-#if (CFG_UART_BASE == UART0_BASE)
+#if (CONFIG_SYS_UART_BASE == UART0_BASE)
 	__gpio_as_uart0();
 #endif
-#if (CFG_UART_BASE == UART1_BASE)
+#if (CONFIG_SYS_UART_BASE == UART1_BASE)
 	__gpio_as_uart1();
 #endif
-#if (CFG_UART_BASE == UART2_BASE)
+#if (CONFIG_SYS_UART_BASE == UART2_BASE)
 	__gpio_as_uart2();
 #endif
-#if (CFG_UART_BASE == UART3_BASE)
+#if (CONFIG_SYS_UART_BASE == UART3_BASE)
 	__gpio_as_uart3();
 #endif
 //	__gpio_as_emc();
@@ -419,10 +419,10 @@ void nand_boot(void)
 	/*
 	 * Load U-Boot image from NAND into RAM
 	 */
-	ret = nand_load(CFG_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
-			(uchar *)CFG_NAND_U_BOOT_DST);
+	ret = nand_load(CONFIG_SYS_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
+			(uchar *)CONFIG_SYS_NAND_U_BOOT_DST);
 
-	uboot = (void (*)(void))CFG_NAND_U_BOOT_START;
+	uboot = (void (*)(void))CONFIG_SYS_NAND_U_BOOT_START;
 
 	serial_puts("Starting U-Boot ...\n");
 

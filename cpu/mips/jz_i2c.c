@@ -91,7 +91,7 @@ static int i2c_get_data(unsigned char *data, int ack)
  */
 void i2c_open(void)
 {
-	__i2c_set_clk(CFG_EXTAL, 10000); /* default 10 KHz */
+	__i2c_set_clk(CONFIG_SYS_EXTAL, 10000); /* default 10 KHz */
 	__i2c_enable();
 }
 
@@ -103,7 +103,7 @@ void i2c_close(void)
 
 void i2c_setclk(unsigned int i2cclk)
 {
-	__i2c_set_clk(CFG_EXTAL, i2cclk);
+	__i2c_set_clk(CONFIG_SYS_EXTAL, i2cclk);
 }
 
 int i2c_lseek(unsigned char device, unsigned char offset)

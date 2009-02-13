@@ -397,10 +397,10 @@ void nand_boot(void)
 	/*
 	 * Load U-Boot image from NAND into RAM
 	 */
-	nand_load(CFG_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
-		  (uchar *)CFG_NAND_U_BOOT_DST);
+	nand_load(CONFIG_SYS_NAND_U_BOOT_OFFS, CONFIG_SYS_NAND_U_BOOT_SIZE,
+		  (uchar *)CONFIG_SYS_NAND_U_BOOT_DST);
 
-	uboot = (void (*)(void))CFG_NAND_U_BOOT_START;
+	uboot = (void (*)(void))CONFIG_SYS_NAND_U_BOOT_START;
 
 	serial_puts("Starting U-Boot ...\n");
 
