@@ -17,7 +17,7 @@
 #include <asm/jz4740.h>
 #include <asm/io.h>
 
-/*
+
 static struct nand_ecclayout nand_oob_rs = {
 	.eccbytes = 36,
 	.eccpos = {
@@ -28,7 +28,7 @@ static struct nand_ecclayout nand_oob_rs = {
 		38, 39, 40, 41},
 	.oobfree = { {2, 4}, {42, 22} }
 };
-*/
+
 
 
 #define PAR_SIZE 9
@@ -101,12 +101,15 @@ static int jzsoc_nand_calculate_rs_ecc(struct mtd_info* mtd, const u_char* dat,
 	volatile u8 *paraddr = (volatile u8 *)EMC_NFPAR0;
 	short i;
 
+	printf("%s\n", __func__);
+
 	__nand_ecc_encode_sync() 
 	__nand_ecc_disable();
 	
 	for(i = 0; i < PAR_SIZE; i++) 
 		ecc_code[i] = *paraddr++;			
 	
+	printf("%s end\n", __func__);
 	return 0;
 }
 
@@ -114,6 +117,7 @@ static void jzsoc_nand_enable_rs_hwecc(struct mtd_info* mtd, int mode)
 {
 	REG_EMC_NFINTS = 0x0;
 
+	printf("%s\n", __func__);
  	__nand_ecc_enable();
 	__nand_select_rs_ecc();
 
@@ -123,6 +127,7 @@ static void jzsoc_nand_enable_rs_hwecc(struct mtd_info* mtd, int mode)
 	if (NAND_ECC_WRITE == mode){
 		__nand_rs_ecc_encoding();
 	}
+	printf("%s end\n", __func__);
 }	
 
 /* Correct 1~9-bit errors in 512-bytes data */
@@ -130,6 +135,7 @@ static void jzsoc_rs_correct(unsigned char *dat, int idx, int mask)
 {
 	int i;
 
+	printf("%s\n", __func__);
 	idx--;
 
 	i = idx + (idx >> 3);
@@ -141,6 +147,7 @@ static void jzsoc_rs_correct(unsigned char *dat, int idx, int mask)
 	dat[i] ^= mask & 0xff;
 	if (i < 511)
 		dat[i+1] ^= (mask >> 8) & 0xff;
+	printf("%s end\n", __func__);
 }
 
 static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
@@ -150,6 +157,7 @@ static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 	short k;
 	u32 stat;
 	/* Set PAR values */
+	printf("%s\n", __func__);
 	
 	for (k = 0; k < PAR_SIZE; k++) {
 		*paraddr++ = read_ecc[k];
@@ -180,6 +188,7 @@ static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 				jzsoc_rs_correct(dat, (REG_EMC_NFERR1 & EMC_NFERR_INDEX_MASK) >> EMC_NFERR_INDEX_BIT, (REG_EMC_NFERR1 & EMC_NFERR_MASK_MASK) >> EMC_NFERR_MASK_BIT);
 			case 1:
 				jzsoc_rs_correct(dat, (REG_EMC_NFERR0 & EMC_NFERR_INDEX_MASK) >> EMC_NFERR_INDEX_BIT, (REG_EMC_NFERR0 & EMC_NFERR_MASK_MASK) >> EMC_NFERR_MASK_BIT);
+	printf("%s end\n", __func__);
 				return 0;
 			default:
 				break;
@@ -187,6 +196,7 @@ static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 		}
 	}
 	//no error need to be correct 
+	printf("%s end\n", __func__);
 	return 0;
 }
 
@@ -200,10 +210,10 @@ int board_nand_init(struct nand_chip *nand)
         nand->cmd_ctrl = jz_hwcontrol;
         nand->dev_ready = jz_device_ready;
 	
-	nand->ecc.mode = NAND_ECC_HW;
+	nand->ecc.mode = NAND_ECC_NONE;
 	nand->ecc.size = 512;
 	nand->ecc.bytes = 9;
-//	nand->ecc.layout = &nand_oob_rs;
+	nand->ecc.layout = &nand_oob_rs;
 	nand->ecc.correct  = jzsoc_nand_rs_correct_data;
 	nand->ecc.hwctl  = jzsoc_nand_enable_rs_hwecc;
 	nand->ecc.calculate = jzsoc_nand_calculate_rs_ecc;
