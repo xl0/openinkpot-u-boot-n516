@@ -47,9 +47,9 @@ $(nandobj)u-boot-spl-pad.bin: $(nandobj)u-boot-spl.bin
 	cat $< $(nandobj)junk1 > $(nandobj)junk2
 	dd bs=1024 count=8 if=$(nandobj)junk2 of=$(nandobj)junk3
 	cat $(nandobj)junk3 $(nandobj)junk3 > $(nandobj)junk4
-	dd bs=1024 count=256 if=/dev/zero of=$(nandobj)junk5
+	dd bs=1024 count=128 if=/dev/zero of=$(nandobj)junk5
 	cat $(nandobj)junk4 $(nandobj)junk5 > $(nandobj)junk6
-	dd bs=1024 count=256 if=$(nandobj)junk6 of=$@
+	dd bs=1024 count=128 if=$(nandobj)junk6 of=$@
 	rm -f $(nandobj)junk*
 
 $(nandobj)u-boot-spl.bin:	$(nandobj)u-boot-spl
