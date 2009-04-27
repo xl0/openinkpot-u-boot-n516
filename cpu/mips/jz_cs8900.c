@@ -362,8 +362,9 @@ int jz_enet_initialize(bd_t *bis)
 	dev->halt   = jz_eth_halt;
 	dev->send   = jz_eth_send;
 	dev->recv   = jz_eth_rx;
-
+#ifdef CONFIG_NET_MULTI
 	eth_register(dev);
+#endif
 	
 	return 1;
 }
