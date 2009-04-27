@@ -101,15 +101,12 @@ static int jzsoc_nand_calculate_rs_ecc(struct mtd_info* mtd, const u_char* dat,
 	volatile u8 *paraddr = (volatile u8 *)EMC_NFPAR0;
 	short i;
 
-	printf("%s\n", __func__);
-
-	__nand_ecc_encode_sync() 
+	__nand_ecc_encode_sync();
 	__nand_ecc_disable();
-	
-	for(i = 0; i < PAR_SIZE; i++) 
-		ecc_code[i] = *paraddr++;			
-	
-	printf("%s end\n", __func__);
+
+	for(i = 0; i < PAR_SIZE; i++)
+		ecc_code[i] = *paraddr++;
+
 	return 0;
 }
 
@@ -117,8 +114,7 @@ static void jzsoc_nand_enable_rs_hwecc(struct mtd_info* mtd, int mode)
 {
 	REG_EMC_NFINTS = 0x0;
 
-	printf("%s\n", __func__);
- 	__nand_ecc_enable();
+	__nand_ecc_enable();
 	__nand_select_rs_ecc();
 
 	if (NAND_ECC_READ == mode){
@@ -127,15 +123,13 @@ static void jzsoc_nand_enable_rs_hwecc(struct mtd_info* mtd, int mode)
 	if (NAND_ECC_WRITE == mode){
 		__nand_rs_ecc_encoding();
 	}
-	printf("%s end\n", __func__);
-}	
+}
 
 /* Correct 1~9-bit errors in 512-bytes data */
 static void jzsoc_rs_correct(unsigned char *dat, int idx, int mask)
 {
 	int i;
 
-	printf("%s\n", __func__);
 	idx--;
 
 	i = idx + (idx >> 3);
@@ -147,18 +141,16 @@ static void jzsoc_rs_correct(unsigned char *dat, int idx, int mask)
 	dat[i] ^= mask & 0xff;
 	if (i < 511)
 		dat[i+1] ^= (mask >> 8) & 0xff;
-	printf("%s end\n", __func__);
 }
 
 static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
-				 u_char *read_ecc, u_char *calc_ecc)					
+				 u_char *read_ecc, u_char *calc_ecc)
 {
 	volatile u8 *paraddr = (volatile u8 *)EMC_NFPAR0;
 	short k;
 	u32 stat;
+
 	/* Set PAR values */
-	printf("%s\n", __func__);
-	
 	for (k = 0; k < PAR_SIZE; k++) {
 		*paraddr++ = read_ecc[k];
 	}
@@ -188,18 +180,69 @@ static int jzsoc_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 				jzsoc_rs_correct(dat, (REG_EMC_NFERR1 & EMC_NFERR_INDEX_MASK) >> EMC_NFERR_INDEX_BIT, (REG_EMC_NFERR1 & EMC_NFERR_MASK_MASK) >> EMC_NFERR_MASK_BIT);
 			case 1:
 				jzsoc_rs_correct(dat, (REG_EMC_NFERR0 & EMC_NFERR_INDEX_MASK) >> EMC_NFERR_INDEX_BIT, (REG_EMC_NFERR0 & EMC_NFERR_MASK_MASK) >> EMC_NFERR_MASK_BIT);
-	printf("%s end\n", __func__);
 				return 0;
 			default:
 				break;
-	   		}
+			}
 		}
 	}
 	//no error need to be correct 
-	printf("%s end\n", __func__);
 	return 0;
 }
 
+static int nand_read_page_hwecc_rs(struct mtd_info *mtd, struct nand_chip *chip,
+				   uint8_t *buf)
+{
+	int i, j;
+	int eccsize = chip->ecc.size;
+	int eccbytes = chip->ecc.bytes;
+	int eccsteps = chip->ecc.steps;
+	uint8_t *p = buf;
+	uint8_t *ecc_calc = chip->buffers->ecccalc;
+	uint8_t *ecc_code = chip->buffers->ecccode;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	uint32_t page;
+	uint8_t flag = 0;
+
+	page = (buf[3]<<24) + (buf[2]<<16) + (buf[1]<<8) + buf[0];
+
+	chip->cmdfunc(mtd, NAND_CMD_READOOB, 0, page);
+	chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
+	for (i = 0; i < chip->ecc.total; i++) {
+		ecc_code[i] = chip->oob_poi[eccpos[i]];
+//		if (ecc_code[i] != 0xff) flag = 1;
+	}
+
+	eccsteps = chip->ecc.steps;
+	p = buf;
+
+	chip->cmdfunc(mtd, NAND_CMD_RNDOUT, 0x00, -1);
+	for (i = 0 ; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+		int stat;
+
+		flag = 0;
+		for (j = 0; j < eccbytes; j++)
+			if (ecc_code[i + j] != 0xff) {
+				flag = 1;
+				break;
+			}
+
+		if (flag) {
+			chip->ecc.hwctl(mtd, NAND_ECC_READ);
+			chip->read_buf(mtd, p, eccsize);
+			stat = chip->ecc.correct(mtd, p, &ecc_code[i], &ecc_calc[i]);
+			if (stat < 0)
+				mtd->ecc_stats.failed++;
+			else
+				mtd->ecc_stats.corrected += stat;
+		}
+		else {
+			chip->ecc.hwctl(mtd, NAND_ECC_READ);
+			chip->read_buf(mtd, p, eccsize);
+		}
+	}
+	return 0;
+}
 /*
  * Main initialization routine
  */
@@ -209,14 +252,15 @@ int board_nand_init(struct nand_chip *nand)
 
         nand->cmd_ctrl = jz_hwcontrol;
         nand->dev_ready = jz_device_ready;
-	
-	nand->ecc.mode = NAND_ECC_NONE;
-	nand->ecc.size = 512;
-	nand->ecc.bytes = 9;
-	nand->ecc.layout = &nand_oob_rs;
-	nand->ecc.correct  = jzsoc_nand_rs_correct_data;
-	nand->ecc.hwctl  = jzsoc_nand_enable_rs_hwecc;
-	nand->ecc.calculate = jzsoc_nand_calculate_rs_ecc;
+
+	nand->ecc.mode		= NAND_ECC_HW;
+	nand->ecc.size		= 512;
+	nand->ecc.bytes		= 9;
+	nand->ecc.layout	= &nand_oob_rs;
+	nand->ecc.correct	= jzsoc_nand_rs_correct_data;
+	nand->ecc.hwctl		= jzsoc_nand_enable_rs_hwecc;
+	nand->ecc.calculate	= jzsoc_nand_calculate_rs_ecc;
+	nand->ecc.read_page	= nand_read_page_hwecc_rs;
 
         /* Set address of NAND IO lines */
         nand->IO_ADDR_R = (void __iomem *) CONFIG_SYS_NAND_BASE;
