@@ -26,7 +26,7 @@ static struct nand_ecclayout nand_oob_rs = {
 		22, 23, 24, 25, 26, 27, 28, 29,
 		30, 31, 32, 33, 34, 35, 36, 37,
 		38, 39, 40, 41},
-	.oobfree = { {2, 4}, {42, 22} }
+	.oobfree = { {42, 22} }
 };
 
 
@@ -243,6 +243,52 @@ static int nand_read_page_hwecc_rs(struct mtd_info *mtd, struct nand_chip *chip,
 	}
 	return 0;
 }
+
+const uint8_t empty_ecc[] = {0xcd, 0x9d, 0x90, 0x58, 0xf4, 0x8b, 0xff, 0xb7, 0x6f};
+static void nand_write_page_hwecc_rs(struct mtd_info *mtd, struct nand_chip *chip,
+				  const uint8_t *buf)
+{
+	int i, j, eccsize = chip->ecc.size;
+	int eccbytes = chip->ecc.bytes;
+	int eccsteps = chip->ecc.steps;
+	uint8_t *ecc_calc = chip->buffers->ecccalc;
+	const uint8_t *p = buf;
+	uint32_t *eccpos = chip->ecc.layout->eccpos;
+	int page_maybe_empty;
+
+	for (i = 0; eccsteps; eccsteps--, i += eccbytes, p += eccsize) {
+		chip->ecc.hwctl(mtd, NAND_ECC_WRITE);
+		chip->write_buf(mtd, p, eccsize);
+		chip->ecc.calculate(mtd, p, &ecc_calc[i]);
+
+		page_maybe_empty = 1;
+		for (j = 0; j < eccbytes; j++)
+			if (ecc_calc[i + j] != empty_ecc[j]) {
+				page_maybe_empty = 0;
+				break;
+			}
+
+		if (page_maybe_empty)
+			for (j = 0; j < eccsize; j++)
+				if (p[j] != 0xff) {
+					page_maybe_empty = 0;
+					break;
+				}
+		if (page_maybe_empty)
+			memset(&ecc_calc[i], 0xff, eccbytes);
+	}
+
+	for (i = 0; i < chip->ecc.total; i++)
+		chip->oob_poi[eccpos[i]] = ecc_calc[i];
+
+	/* BootROM loader requires this */
+	chip->oob_poi[2] = 0;
+	chip->oob_poi[3] = 0;
+	chip->oob_poi[3] = 0;
+
+	chip->write_buf(mtd, chip->oob_poi, mtd->oobsize);
+}
+
 /*
  * Main initialization routine
  */
@@ -261,6 +307,7 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.hwctl		= jzsoc_nand_enable_rs_hwecc;
 	nand->ecc.calculate	= jzsoc_nand_calculate_rs_ecc;
 	nand->ecc.read_page	= nand_read_page_hwecc_rs;
+	nand->ecc.write_page	= nand_write_page_hwecc_rs;
 
         /* Set address of NAND IO lines */
         nand->IO_ADDR_R = (void __iomem *) CONFIG_SYS_NAND_BASE;
