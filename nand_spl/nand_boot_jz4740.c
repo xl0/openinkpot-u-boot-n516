@@ -24,6 +24,8 @@
 #include <asm/io.h>
 #include <asm/jz4740.h>
 
+#define CONFIG_ECC_RS
+
 /*
  * NAND flash definitions
  */
@@ -32,9 +34,18 @@
 #define NAND_ADDRPORT	0xb8010000
 #define NAND_COMMPORT	0xb8008000
 
+
+#ifdef CONFIG_ECC_HM
+#define ECC_BLOCK	256
+#define ECC_POS		40
+#define	PAR_SIZE	3
+#else
 #define ECC_BLOCK	512
 #define ECC_POS		6
 #define PAR_SIZE	9
+#endif
+
+#define __nand_read_hm_ecc()   (REG_EMC_NFECC & 0x00ffffff)
 
 #define __nand_enable()		(REG_EMC_NFCSR |= EMC_NFCSR_NFE1 | EMC_NFCSR_NFCE1)
 #define __nand_disable()	(REG_EMC_NFCSR &= ~(EMC_NFCSR_NFCE1))
@@ -42,9 +53,15 @@
 	(REG_EMC_NFECR = EMC_NFECR_ECCE | EMC_NFECR_ERST | EMC_NFECR_RS | EMC_NFECR_RS_ENCODING)
 #define __nand_ecc_rs_decoding() \
 	(REG_EMC_NFECR = EMC_NFECR_ECCE | EMC_NFECR_ERST | EMC_NFECR_RS | EMC_NFECR_RS_DECODING)
-#define __nand_ecc_disable()	(REG_EMC_NFECR &= ~EMC_NFECR_ECCE)
 #define __nand_ecc_encode_sync() while (!(REG_EMC_NFINTS & EMC_NFINTS_ENCF))
 #define __nand_ecc_decode_sync() while (!(REG_EMC_NFINTS & EMC_NFINTS_DECF))
+
+#define __nand_ecc_enable()    (REG_EMC_NFECR = EMC_NFECR_ECCE | EMC_NFECR_ERST )
+#define __nand_ecc_disable()   (REG_EMC_NFECR &= ~EMC_NFECR_ECCE)
+
+#define __nand_select_hm_ecc() (REG_EMC_NFECR &= ~EMC_NFECR_RS )
+#define __nand_select_rs_ecc() (REG_EMC_NFECR |= EMC_NFECR_RS)
+
 
 static inline void __nand_dev_ready(void)
 {
@@ -111,6 +128,7 @@ static inline void nand_read_buf(void *buf, int count, int bw)
 		nand_read_buf16(buf, count);
 }
 
+#ifndef CONFIG_ECC_HM
 /* Correct 1~9-bit errors in 512-bytes data */
 static void rs_correct(unsigned char *dat, int idx, int mask)
 {
@@ -128,6 +146,111 @@ static void rs_correct(unsigned char *dat, int idx, int mask)
 	if (i < 511)
 		dat[i+1] ^= (mask >> 8) & 0xff;
 }
+#else
+static int calculate_hm_ecc(unsigned char* ecc_code)
+{
+	unsigned int calc_ecc;
+	unsigned char *tmp;
+
+	__nand_ecc_disable();
+
+	calc_ecc = ~(__nand_read_hm_ecc()) | 0x00030000;
+
+	tmp = (unsigned char *)&calc_ecc;
+	//adjust eccbytes order for compatible with software ecc
+	ecc_code[0] = tmp[1];
+	ecc_code[1] = tmp[0];
+	ecc_code[2] = tmp[2];
+
+	return 0;
+}
+
+static int hm_correct_data(unsigned char *dat, unsigned char *read_ecc, unsigned char *calc_ecc)
+{
+	unsigned char a, b, c, d1, d2, d3, add, bit, i;
+
+	/* Do error detection */
+	d1 = calc_ecc[0] ^ read_ecc[0];
+	d2 = calc_ecc[1] ^ read_ecc[1];
+	d3 = calc_ecc[2] ^ read_ecc[2];
+
+	if ((d1 | d2 | d3) == 0) {
+		/* No errors */
+		return 0;
+	}
+	else {
+		a = (d1 ^ (d1 >> 1)) & 0x55;
+		b = (d2 ^ (d2 >> 1)) & 0x55;
+		c = (d3 ^ (d3 >> 1)) & 0x54;
+
+		/* Found and will correct single bit error in the data */
+		if ((a == 0x55) && (b == 0x55) && (c == 0x54)) {
+			c = 0x80;
+			add = 0;
+			a = 0x80;
+			for (i=0; i<4; i++) {
+				if (d1 & c)
+					add |= a;
+				c >>= 2;
+				a >>= 1;
+			}
+			c = 0x80;
+			for (i=0; i<4; i++) {
+				if (d2 & c)
+					add |= a;
+				c >>= 2;
+				a >>= 1;
+			}
+			bit = 0;
+			b = 0x04;
+			c = 0x80;
+			for (i=0; i<3; i++) {
+				if (d3 & c)
+					bit |= b;
+				c >>= 2;
+				b >>= 1;
+			}
+			b = 0x01;
+			a = dat[add];
+			a ^= (b << bit);
+			dat[add] = a;
+			return 1;
+		}
+		else {
+			i = 0;
+			while (d1) {
+				if (d1 & 0x01)
+					++i;
+				d1 >>= 1;
+			}
+			while (d2) {
+				if (d2 & 0x01)
+					++i;
+				d2 >>= 1;
+			}
+			while (d3) {
+				if (d3 & 0x01)
+					++i;
+				d3 >>= 1;
+			}
+			if (i == 1) {
+				/* ECC Code Error Correction */
+				read_ecc[0] = calc_ecc[0];
+				read_ecc[1] = calc_ecc[1];
+				read_ecc[2] = calc_ecc[2];
+				return 1;
+			}
+			else {
+				/* Uncorrectable Error */
+				return -1;
+			}
+		}
+	}
+
+	/* Should never happen */
+	return -1;
+}
+#endif
 
 static int nand_read_oob(int page_addr, uchar *buf, int size)
 {
@@ -211,7 +334,23 @@ static int nand_read_page(int block, int page, uchar *dst, uchar *oobbuf)
 	for (i = 0; i < ecc_count; i++) {
 		volatile unsigned char *paraddr = (volatile unsigned char *)EMC_NFPAR0;
 		unsigned int stat;
+		unsigned char calc_ecc[3];
 
+#ifdef CONFIG_ECC_HM
+		__nand_ecc_enable();
+		__nand_select_hm_ecc();
+
+		nand_read_buf((void *)tmpbuf, ECC_BLOCK, bus_width);
+
+		calculate_hm_ecc(calc_ecc);
+
+		stat = hm_correct_data(tmpbuf, &oob_buf[ECC_POS + i * PAR_SIZE], calc_ecc);
+
+		if (stat < 0)
+			serial_puts("Uncorrectable ECC error on read\n");
+		else if (stat == 1)
+			serial_puts("One error corrected by ECC on read\n");
+#else
 		/* Enable RS decoding */
 		REG_EMC_NFINTS = 0x0;
 		__nand_ecc_rs_decoding();
@@ -270,7 +409,7 @@ static int nand_read_page(int block, int page, uchar *dst, uchar *oobbuf)
 				}
 			}
 		}
-
+#endif
 		tmpbuf += ECC_BLOCK;
 	}
 
