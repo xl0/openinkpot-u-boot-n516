@@ -28,6 +28,7 @@
 #include <asm/addrspace.h>
 #include <asm/cacheops.h>
 #include <asm/reboot.h>
+#include <mmc.h>
 
 #define cache_op(op,addr)						\
 	__asm__ __volatile__(						\
@@ -142,7 +143,6 @@ void write_one_tlb(int index, u32 pagemask, u32 hi, u32 low0, u32 low1)
 	write_c0_index(index);
 	tlb_write_indexed();
 }
-#endif
 
 int cpu_eth_init(bd_t *bis)
 {
@@ -152,6 +152,15 @@ int cpu_eth_init(bd_t *bis)
 	return 0;
 }
 
+int cpu_mmc_init(bd_t *bis)
+{
+	printf("Initialization of MMC\n");
+#ifdef CONFIG_JZ4740
+	jz_mmc_initialize(bis);
+#endif
+	return 0;
+}
+#endif
 
 #ifdef CONFIG_JzRISC
 
