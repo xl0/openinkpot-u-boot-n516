@@ -32,6 +32,7 @@
 #include <nand.h>
 #include <onenand_uboot.h>
 #include <spi.h>
+#include <mmc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -471,6 +472,10 @@ puts("console initialized\n");
 	puts ("Net:   ");
 #endif
 	eth_initialize(gd->bd);
+#endif
+
+#ifdef CONFIG_GENERIC_MMC
+	mmc_initialize(gd->bd);
 #endif
 
 	/* main_loop() can return to retry autoboot, if so just run it again. */
