@@ -124,7 +124,7 @@ static void eth_reginit (void)
 	/* enable transmitter/receiver mode */
 	put_reg (PP_LineCTL, PP_LineCTL_Rx | PP_LineCTL_Tx);
 }
-
+#if 0
 static void cs8900_get_enetaddr (uchar * addr)
 {
 	int i;
@@ -182,6 +182,36 @@ static void cs8900_get_enetaddr (uchar * addr)
 
 	}
 }
+void cs8900_get_enetaddr (void)
+{
+	int i;
+	uchar enetaddr[6];
+
+	/* if the env is setup, then bail */
+	if (eth_getenv_enetaddr("ethaddr", enetaddr))
+		return;
+
+	/* verify chip id */
+	if (get_reg_init_bus (PP_ChipID) != 0x630e)
+		return;
+	eth_reset ();
+	if ((get_reg (PP_SelfSTAT) & (PP_SelfSTAT_EEPROM | PP_SelfSTAT_EEPROM_OK)) ==
+			(PP_SelfSTAT_EEPROM | PP_SelfSTAT_EEPROM_OK)) {
+
+		/* Load the MAC from EEPROM */
+		for (i = 0; i < 6 / 2; i++) {
+			unsigned int Addr;
+
+			Addr = get_reg (PP_IA + i * 2);
+			enetaddr[i * 2] = Addr & 0xFF;
+			enetaddr[i * 2 + 1] = Addr >> 8;
+		}
+
+		eth_setenv_enetaddr("ethaddr", enetaddr);
+		debug("### Set environment from HW MAC addr = \"%pM\"\n", enetaddr);
+	}
+}
+#endif
 
 static void jz_eth_halt (struct eth_device *dev)
 {
@@ -194,6 +224,7 @@ static void jz_eth_halt (struct eth_device *dev)
 
 static int jz_eth_init (struct eth_device* dev, bd_t * bd)
 {
+	uchar enetaddr[6];
     u16 id;
 	
     dev = dev;
@@ -213,9 +244,11 @@ static int jz_eth_init (struct eth_device* dev, bd_t * bd)
 	//	   bd->bi_enetaddr[3],bd->bi_enetaddr[2],
 	//	   bd->bi_enetaddr[1],bd->bi_enetaddr[0]);
 	
-	put_reg (PP_IA + 0, bd->bi_enetaddr[0] | (bd->bi_enetaddr[1] << 8));
-	put_reg (PP_IA + 2, bd->bi_enetaddr[2] | (bd->bi_enetaddr[3] << 8));
-	put_reg (PP_IA + 4, bd->bi_enetaddr[4] | (bd->bi_enetaddr[5] << 8));
+	/* set the ethernet address */
+	eth_getenv_enetaddr("ethaddr", enetaddr);
+	put_reg (PP_IA + 0, enetaddr[0] | (enetaddr[1] << 8));
+	put_reg (PP_IA + 2, enetaddr[2] | (enetaddr[3] << 8));
+	put_reg (PP_IA + 4, enetaddr[4] | (enetaddr[5] << 8));
 
 	eth_reginit ();
 	return 0;
