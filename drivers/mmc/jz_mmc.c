@@ -191,7 +191,7 @@ static void jz_mmc_get_response(struct mmc_cmd *cmd)
 static int jz_mmc_receive_data(struct mmc_data *mmc_data)
 {
 	u32  stat, timeout, data, cnt;
-	u32 *buf = (u32 *)mmc_data->dest;
+	char *buf = mmc_data->dest;
 	u32 wblocklen = (u32)(mmc_data->blocksize + 3) >> 2; /* length in word */
 
 	timeout = 0x3ffffff;
@@ -217,8 +217,13 @@ static int jz_mmc_receive_data(struct mmc_data *mmc_data)
 	/* Read data from RXFIFO. It could be FULL or PARTIAL FULL */
 	cnt = wblocklen;
 	while (cnt) {
+		/* buf can be unaligned to 32-bit boundaries*/
 		data = REG_MSC_RXFIFO;
-		*buf++ = data;
+		*buf++ = (u8)(data >> 0);
+		*buf++ = (u8)(data >> 8);
+		*buf++ = (u8)(data >> 16);
+		*buf++ = (u8)(data >> 24);
+
 		cnt --;
 		while (cnt && (REG_MSC_STAT & MSC_STAT_DATA_FIFO_EMPTY))
 			;
