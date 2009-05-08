@@ -25,6 +25,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define DEBUG
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
 #define CONFIG_JZSOC		1  /* Jz SoC */
@@ -34,7 +35,7 @@
 #define CONFIG_SKIP_LOWLEVEL_INIT	1
 #undef  CONFIG_SKIP_RELOCATE_UBOOT
 
-#define CONFIG_LCD                 /* LCD support */
+//#define CONFIG_LCD                 /* LCD support */
 #define CONFIG_JZLCD_SAMSUNG_LTP400WQF02_18BIT
 #define LCD_BPP			5  /* 5: 18,24,32 bits per pixel */
 #define CONFIG_SYS_WHITE_ON_BLACK
@@ -52,11 +53,13 @@
 #define CONFIG_BAUDRATE		57600
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
-/*
+
 #define CONFIG_MMC      	1
+#define CONFIG_GENERIC_MMC	1
+#define CONFIG_JZ_MMC		1
 #define CONFIG_FAT      	1    
 #define CONFIG_SUPPORT_VFAT 	1
-*/
+
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -67,10 +70,17 @@
 #define CONFIG_CMD_DHCP
 #define CONFIG_CMD_PING
 #define CONFIG_CMD_NAND
-//#define CONFIG_CMD_MMC
+#define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
+//#define CONFIG_CMD_UBI
+//#define CONFIG_CMD_JFFS2
+//#define CONFIG_JFFS2_NAND
+//#define CONFIG_JFFS2_CMDLINE
 
 #define CONFIG_DOS_PARTITION
+
+//#define CONFIG_MTD_PARTITIONS
+#define CONFIG_RBTREE
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
@@ -82,7 +92,7 @@
 #define CONFIG_BOOTCOMMAND	"nand read 0x80600000 0x400000 0x300000;bootm"
 #define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
 
-#define CONFIG_NET_MULTI
+//#define CONFIG_NET_MULTI
 
 #define CONFIG_DRIVER_CS8900      1
 #define CS8900_BASE             (0xa8000000)
@@ -101,7 +111,7 @@
  * Miscellaneous configurable options
  */
 #define	CONFIG_SYS_LONGHELP				/* undef to save memory      */
-#define	CONFIG_SYS_PROMPT		"PAVO # "	/* Monitor Command Prompt    */
+#define	CONFIG_SYS_PROMPT		"n516 # "	/* Monitor Command Prompt    */
 #define	CONFIG_SYS_CBSIZE		256		/* Console I/O Buffer Size   */
 #define	CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)  /* Print Buffer Size */
 #define	CONFIG_SYS_MAXARGS		16		/* max number of command args*/
@@ -158,17 +168,18 @@
 /*
  * Define the partitioning of the NAND chip (only RAM U-Boot is needed here)
  */
-#define CONFIG_SYS_NAND_U_BOOT_OFFS	(256 << 10)	/* Offset to RAM U-Boot image	*/
-#define CONFIG_SYS_NAND_U_BOOT_SIZE	(512 << 10)	/* Size of RAM U-Boot image	*/
+#define CONFIG_SYS_NAND_U_BOOT_OFFS	(128 << 10)	/* Offset to RAM U-Boot image	*/
+#define CONFIG_SYS_NAND_U_BOOT_SIZE	(256 << 10)	/* Size of RAM U-Boot image	*/
 
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(128 << 10)	/* NAND chip block size		*/
 #define CONFIG_SYS_NAND_BADBLOCK_PAGE	63		/* NAND bad block was marked at this page in a block, starting from 0 */
 
 #ifdef CONFIG_ENV_IS_IN_NAND
-#define CONFIG_ENV_SIZE			CONFIG_SYS_NAND_BLOCK_SIZE
+//#define CONFIG_ENV_SIZE			CONFIG_SYS_NAND_BLOCK_SIZE
+#define CONFIG_ENV_SIZE			(4096)
 //#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_BLOCK_SIZE + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
-#define CONFIG_ENV_OFFSET		CONFIG_SYS_NAND_U_BOOT_SIZE
-#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET/* + CONFIG_ENV_SIZE*/)
+#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_U_BOOT_OFFS)
+#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
 #endif
 
 
