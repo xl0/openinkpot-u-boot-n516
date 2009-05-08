@@ -39,10 +39,10 @@ LNDIR	:= $(OBJTREE)/nand_spl/board/$(BOARDDIR)
 
 nandobj	:= $(OBJTREE)/nand_spl/
 
-ALL	= $(nandobj)u-boot-spl $(nandobj)u-boot-spl.bin $(nandobj)u-boot-spl-pad.bin
+ALL	= $(nandobj)u-boot-spl $(nandobj)u-boot-spl.bin $(nandobj)u-boot-spl-16k.bin
 all:	$(obj).depend $(ALL)
 
-$(nandobj)u-boot-spl-pad.bin: $(nandobj)u-boot-spl.bin
+$(nandobj)u-boot-spl-16k.bin: $(nandobj)u-boot-spl.bin
 	dd bs=1024 count=8 if=/dev/zero of=$(nandobj)junk1
 	cat $< $(nandobj)junk1 > $(nandobj)junk2
 	dd bs=1024 count=8 if=$(nandobj)junk2 of=$(nandobj)junk3
