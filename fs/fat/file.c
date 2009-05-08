@@ -200,5 +200,5 @@ file_read(const char *filename, void *buffer, unsigned long maxsize)
 		arg = fullpath;
 	}
 
-	return filesystems[current_filesystem].read(arg, buffer, maxsize);
+	return filesystems[current_filesystem].read(arg, buffer, maxsize, 0);
 }

@@ -290,10 +290,12 @@ get_fatent(fsdata *mydata, __u32 entry)
  * Return 0 on success, -1 otherwise.
  */
 static int
-get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
+get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size, unsigned long offset)
 {
-	int idx = 0;
 	__u32 startsect;
+	__u8 tmpbuf[FS_BLOCK_SIZE];
+	unsigned int skip_sectors = offset / FS_BLOCK_SIZE;
+	unsigned int first_sector_tail;
 
 	if (clustnum > 0) {
 		startsect = mydata->data_begin + clustnum*mydata->clust_size;
@@ -301,14 +303,34 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
 		startsect = mydata->rootdir_sect;
 	}
 
-	FAT_DPRINT("gc - clustnum: %d, startsect: %d\n", clustnum, startsect);
+	FAT_DPRINT("gc - clustnum: %d, startsect: %d, size=%lu, offset=%lu\n", clustnum, startsect, size, offset);
+	startsect += skip_sectors;
+	offset %= FS_BLOCK_SIZE;
+	first_sector_tail = FS_BLOCK_SIZE - offset;
+
+	if (first_sector_tail) {
+		unsigned int data_size = min(first_sector_tail, size);
+
+		if (disk_read(startsect, 1, tmpbuf) < 0) {
+			FAT_DPRINT("Error reading data\n");
+			return -1;
+		}
+
+		memcpy(buffer, &tmpbuf[offset], data_size);
+		buffer += data_size;
+		startsect++;
+		size -= data_size;
+	}
+
 	if (disk_read(startsect, size/FS_BLOCK_SIZE , buffer) < 0) {
 		FAT_DPRINT("Error reading data\n");
 		return -1;
 	}
+
 	if(size % FS_BLOCK_SIZE) {
-		__u8 tmpbuf[FS_BLOCK_SIZE];
-		idx= size/FS_BLOCK_SIZE;
+		unsigned int idx= size/FS_BLOCK_SIZE;
+
+		FAT_DPRINT("gc - reading tail sector (%u)\n", startsect + idx);
 		if (disk_read(startsect + idx, 1, tmpbuf) < 0) {
 			FAT_DPRINT("Error reading data\n");
 			return -1;
@@ -316,12 +338,33 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
 		buffer += idx*FS_BLOCK_SIZE;
 
 		memcpy(buffer, tmpbuf, size % FS_BLOCK_SIZE);
-		return 0;
 	}
 
 	return 0;
 }
 
+static int
+do_read_clusters(fsdata *mydata, __u8 **buffer, __u32 curclust,
+		unsigned long actsize, unsigned long *offset,
+		unsigned long *gotsize)
+{
+	FAT_DPRINT("%s: *offset = %lu, actsize = %lu\n", __func__, *offset, actsize);
+	if (*offset < actsize) {
+		unsigned int size = actsize - *offset;
+
+		if (get_cluster(mydata, curclust, *buffer, size, *offset) != 0) {
+			FAT_ERROR("Error reading cluster");
+			return -1;
+		}
+
+		*buffer += size;
+		*gotsize += size;
+		*offset = 0;
+	} else {
+		*offset -= actsize;
+	}
+	return 0;
+}
 
 /*
  * Read at most 'maxsize' bytes from the file associated with 'dentptr'
@@ -330,7 +373,7 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size)
  */
 static long
 get_contents(fsdata *mydata, dir_entry *dentptr, __u8 *buffer,
-	     unsigned long maxsize)
+	     unsigned long maxsize, unsigned long offset)
 {
 	unsigned long filesize = FAT2CPU32(dentptr->size), gotsize = 0;
 	unsigned int bytesperclust = mydata->clust_size * SECTOR_SIZE;
@@ -338,11 +381,11 @@ get_contents(fsdata *mydata, dir_entry *dentptr, __u8 *buffer,
 	__u32 endclust, newclust;
 	unsigned long actsize;
 
-	FAT_DPRINT("Filesize: %ld bytes\n", filesize);
+	FAT_DPRINT("Filesize: %lu bytes\n", filesize);
 
-	if (maxsize > 0 && filesize > maxsize) filesize = maxsize;
+	if (maxsize > 0 && filesize > (maxsize + offset)) filesize = maxsize + offset;
 
-	FAT_DPRINT("Reading: %ld bytes\n", filesize);
+	FAT_DPRINT("Reading: %lu bytes from offset %lu\n", filesize - offset, offset);
 
 	actsize=bytesperclust;
 	endclust=curclust;
@@ -363,29 +406,21 @@ get_contents(fsdata *mydata, dir_entry *dentptr, __u8 *buffer,
 		/* actsize >= file size */
 		actsize -= bytesperclust;
 		/* get remaining clusters */
-		if (get_cluster(mydata, curclust, buffer, (int)actsize) != 0) {
-			FAT_ERROR("Error reading cluster\n");
+		if (do_read_clusters(mydata, &buffer, curclust, actsize, &offset, &gotsize) != 0)
 			return -1;
-		}
+
 		/* get remaining bytes */
-		gotsize += (int)actsize;
 		filesize -= actsize;
-		buffer += actsize;
 		actsize= filesize;
-		if (get_cluster(mydata, endclust, buffer, (int)actsize) != 0) {
-			FAT_ERROR("Error reading cluster\n");
+		if (do_read_clusters(mydata, &buffer, endclust, actsize, &offset, &gotsize) != 0)
 			return -1;
-		}
-		gotsize+=actsize;
+
 		return gotsize;
 getit:
-		if (get_cluster(mydata, curclust, buffer, (int)actsize) != 0) {
-			FAT_ERROR("Error reading cluster\n");
+		if (do_read_clusters(mydata, &buffer, endclust, actsize, &offset, &gotsize) != 0)
 			return -1;
-		}
-		gotsize += (int)actsize;
+
 		filesize -= actsize;
-		buffer += actsize;
 		curclust = get_fatent(mydata, endclust);
 		if (CHECK_CLUST(curclust, mydata->fatsize)) {
 			FAT_DPRINT("curclust: 0x%x\n", curclust);
@@ -466,7 +501,7 @@ get_vfatname(fsdata *mydata, int curclust, __u8 *cluster,
 			return -1;
 		}
 		if (get_cluster(mydata, curclust, get_vfatname_block,
-				mydata->clust_size * SECTOR_SIZE) != 0) {
+				mydata->clust_size * SECTOR_SIZE, 0) != 0) {
 			FAT_DPRINT("Error: reading directory block\n");
 			return -1;
 		}
@@ -538,7 +573,7 @@ static dir_entry *get_dentfromdir (fsdata * mydata, int startsect,
 	int i;
 
 	if (get_cluster (mydata, curclust, get_dentfromdir_block,
-		 mydata->clust_size * SECTOR_SIZE) != 0) {
+		 mydata->clust_size * SECTOR_SIZE, 0) != 0) {
 	    FAT_DPRINT ("Error: reading directory block\n");
 	    return NULL;
 	}
@@ -736,7 +771,7 @@ __attribute__ ((__aligned__(__alignof__(dir_entry))))
 __u8 do_fat_read_block[MAX_CLUSTSIZE];
 long
 do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
-	     int dols)
+		unsigned long offset, int dols)
 {
 #if CONFIG_NIOS /* NIOS CPU cannot access big automatic arrays */
     static
@@ -968,7 +1003,7 @@ do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
 	    subname = nextname;
 	}
     }
-    ret = get_contents (mydata, dentptr, buffer, maxsize);
+    ret = get_contents (mydata, dentptr, buffer, maxsize, offset);
     FAT_DPRINT ("Size: %d, got: %ld\n", FAT2CPU32 (dentptr->size), ret);
 
     return ret;
@@ -1023,13 +1058,13 @@ file_fat_detectfs(void)
 int
 file_fat_ls(const char *dir)
 {
-	return do_fat_read(dir, NULL, 0, LS_YES);
+	return do_fat_read(dir, NULL, 0, 0, LS_YES);
 }
 
 
 long
-file_fat_read(const char *filename, void *buffer, unsigned long maxsize)
+file_fat_read(const char *filename, void *buffer, unsigned long maxsize, unsigned long offset)
 {
 	printf("reading %s\n",filename);
-	return do_fat_read(filename, buffer, maxsize, LS_NO);
+	return do_fat_read(filename, buffer, maxsize, offset, LS_NO);
 }

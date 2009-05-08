@@ -195,7 +195,7 @@ typedef struct {
 typedef int	(file_detectfs_func)(void);
 typedef int	(file_ls_func)(const char *dir);
 typedef long	(file_read_func)(const char *filename, void *buffer,
-				 unsigned long maxsize);
+				 unsigned long maxsize, unsigned long offset);
 
 struct filesystem {
 	file_detectfs_func *detect;
@@ -213,7 +213,7 @@ file_read_func		file_fat_read;
 int file_cd(const char *path);
 int file_fat_detectfs(void);
 int file_fat_ls(const char *dir);
-long file_fat_read(const char *filename, void *buffer, unsigned long maxsize);
+long file_fat_read(const char *filename, void *buffer, unsigned long maxsize, unsigned long offset);
 const char *file_getfsname(int idx);
 int fat_register_device(block_dev_desc_t *dev_desc, int part_no);
 
