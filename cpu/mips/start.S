@@ -477,35 +477,6 @@ relocate_code:
 
 	/* If caches were enabled, we would have to flush them here.
 	 */
-#ifdef CONFIG_JzRISC
-	/* flush d-cache */
-	.set	mips32
-	li	t0, KSEG0
-	addi	t1, t0, CONFIG_SYS_DCACHE_SIZE
-2:
-	cache	Index_Writeback_Inv_D, 0(t0)
-	bne	t0, t1, 2b
-	addi	t0, CONFIG_SYS_CACHELINE_SIZE
-
-	sync
-
-	/* flush i-cache */
-	li	t0, KSEG0
-	addi	t1, t0, CONFIG_SYS_ICACHE_SIZE
-3:
-	cache	Index_Invalidate_I, 0(t0)
-	bne	t0, t1, 3b
-	addi	t0, CONFIG_SYS_CACHELINE_SIZE
-
-	/* Invalidate BTB */
-	mfc0	t0, CP0_CONFIG, 7
-	nop
-	ori	t0, 2
-	mtc0	t0, CP0_CONFIG, 7
-	nop
-
-	.set	mips0
-#endif
 
 	/* a0 & a1 are already set up for flush_cache(start, size) */
 	la	t9, flush_cache
