@@ -25,7 +25,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#define DEBUG
+//#define DEBUG
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
 #define CONFIG_JZSOC		1  /* Jz SoC */
@@ -57,8 +57,7 @@
 #define CONFIG_MMC      	1
 #define CONFIG_GENERIC_MMC	1
 #define CONFIG_JZ_MMC		1
-#define CONFIG_FAT      	1    
-#define CONFIG_SUPPORT_VFAT 	1
+#define CONFIG_FAT		1
 
 
 /* allow to overwrite serial and ethaddr */
@@ -66,9 +65,24 @@
 
 #include <config_cmd_default.h>
 
-#define CONFIG_CMD_ASKENV
-#define CONFIG_CMD_DHCP
-#define CONFIG_CMD_PING
+#undef CONFIG_CMD_BDI		/* bdinfo			*/
+#undef CONFIG_CMD_FPGA
+#undef CONFIG_CMD_ECHO		/* echo arguments		*/
+#undef CONFIG_CMD_FLASH	/* flinfo, erase, protect	*/
+#undef CONFIG_CMD_FPGA		/* FPGA configuration Support	*/
+#undef CONFIG_CMD_IMI		/* iminfo			*/
+#undef CONFIG_CMD_ITEST	/* Integer (and string) test	*/
+#undef CONFIG_CMD_LOADB	/* loadb			*/
+#undef CONFIG_CMD_LOADS	/* loads			*/
+#undef CONFIG_CMD_NFS		/* NFS support			*/
+#undef CONFIG_CMD_RUN		/* run command in env variable	*/
+#undef CONFIG_CMD_SETGETDCR	/* DCR support on 4xx		*/
+#undef CONFIG_CMD_SOURCE	/* "source" command support	*/
+#undef CONFIG_CMD_XIMG		/* Load part of Multi Image	*/
+
+//#define CONFIG_CMD_ASKENV
+//#define CONFIG_CMD_DHCP
+//#define CONFIG_CMD_PING
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
@@ -76,6 +90,7 @@
 //#define CONFIG_CMD_JFFS2
 //#define CONFIG_JFFS2_NAND
 //#define CONFIG_JFFS2_CMDLINE
+#define CONFIG_CMD_UPDATE
 
 #define CONFIG_DOS_PARTITION
 
