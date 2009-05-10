@@ -354,6 +354,16 @@ void board_init_r (gd_t *id, ulong dest_addr)
 
 	monitor_flash_len = (ulong)&uboot_end_data - dest_addr;
 
+	{
+		u32 *p = &__u_boot_cmd_start;
+		int i;
+
+		for (i = 0; i < 6; i++) {
+			if ((p[i] > dest_addr) ||
+					((p[i] < CONFIG_SYS_MONITOR_BASE) && (p[i] >= gd->reloc_off)))
+				p[i] -= gd->reloc_off;
+		}
+	}
 	/*
 	 * We have to relocate the command table manually
 	 */
