@@ -452,8 +452,6 @@ int sd_change_freq(struct mmc *mmc)
 	struct mmc_data data;
 	int timeout;
 
-	mmc->card_caps = 0;
-
 	/* Read the SCR to find out if this card supports higher speeds */
 	cmd.cmdidx = MMC_CMD_APP_CMD;
 	cmd.resp_type = MMC_RSP_R1;
@@ -505,8 +503,15 @@ retry_scr:
 			break;
 	}
 
+	if (mmc->scr[0] & SD_DATA_4BIT)
+		mmc->card_caps |= MMC_MODE_4BIT;
+
 	/* Version 1.0 doesn't support switching */
 	if (mmc->version == SD_VERSION_1_0)
+		return 0;
+	/* If card not supported switch command (detected in CCC
+	 * field of CSD register), we will not try do it */
+	if (!(mmc->card_caps & MMC_MODE_HS))
 		return 0;
 
 	timeout = 4;
@@ -522,9 +527,6 @@ retry_scr:
 			break;
 	}
 
-	if (mmc->scr[0] & SD_DATA_4BIT)
-		mmc->card_caps |= MMC_MODE_4BIT;
-
 	/* If high-speed isn't supported, we return */
 	if (!(__be32_to_cpu(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
 		return 0;
@@ -534,10 +536,8 @@ retry_scr:
 	if (err)
 		return err;
 
-	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000) {
+	if ((__be32_to_cpu(switch_status[4]) & 0x0f000000) == 0x01000000)
 		mmc->card_caps |= MMC_MODE_HS;
-		printf("Switched to HS mode\n");
-	}
 
 	return 0;
 }
@@ -708,6 +708,13 @@ int mmc_startup(struct mmc *mmc)
 
 	if (mmc->write_bl_len > 512)
 		mmc->write_bl_len = 512;
+
+	mmc->card_caps = 0;
+
+	if (!((mmc->csd[1] >> 20) & CCC_SWITCH))
+		debug("Card lacks mandatory switch function\n");
+	else 
+		mmc->card_caps |= MMC_MODE_HS;
 
 	/* Select the card, and put it into Transfer Mode */
 	cmd.cmdidx = MMC_CMD_SELECT_CARD;
