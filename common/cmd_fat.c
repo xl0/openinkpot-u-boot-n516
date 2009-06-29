@@ -95,7 +95,7 @@ int do_fat_fsload (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 U_BOOT_CMD(
 	fatload,	7,	0,	do_fat_fsload,
 	"load binary file from a dos filesystem",
-	"<interface> <dev[:part]>  <addr> <filename> [bytes]\n"
+	"<interface> <dev[:part]>  <addr> <filename> [bytes [offset]]\n"
 	"    - load binary file 'filename' from 'dev' on 'interface'\n"
 	"      to address 'addr' from dos filesystem\n"
 );
