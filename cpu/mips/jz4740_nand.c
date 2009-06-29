@@ -84,7 +84,8 @@ static void jz_device_setup(void)
 {
 	/* Set NFE bit */
 	REG_EMC_NFCSR |= EMC_NFCSR_NFE1;
-	REG_EMC_SMCR3 = 0x04444400;
+	REG_EMC_SMCR1 = 0x09221200;
+//		0x04444400;
 }
 
 void board_nand_select_device(struct nand_chip *nand, int chip)
