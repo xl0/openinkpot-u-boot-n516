@@ -26,6 +26,7 @@
 #define __CONFIG_H
 
 //#define DEBUG
+
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
 #define CONFIG_JZSOC		1  /* Jz SoC */
@@ -36,16 +37,33 @@
 #define CONFIG_BOARD_HWREV	"1.0"
 #define CONFIG_FIRMWARE_EPOCH	"0"
 #define CONFIG_UPDATE_TMPBUF	0x80600000
-#define CONFIG_UPDATE_CHUNKSIZE	0x100000
+#define CONFIG_UPDATE_CHUNKSIZE	0x800000
+#define CONFIG_UPDATE_FILENAME	"update.oifw"
+#define CONFIG_UPDATE_FILEEXT	".oifw"
+#define CONFIG_UBI_PARTITION	"UBI"
 
 #define CONFIG_SKIP_LOWLEVEL_INIT	1
 #undef  CONFIG_SKIP_RELOCATE_UBOOT
 
-//#define CONFIG_LCD                 /* LCD support */
-#define CONFIG_JZLCD_SAMSUNG_LTP400WQF02_18BIT
-#define LCD_BPP			5  /* 5: 18,24,32 bits per pixel */
-#define CONFIG_SYS_WHITE_ON_BLACK
-#define CONFIG_LCD_LOGO
+#define CONFIG_LCD                 /* LCD support */
+#define CONFIG_JZLCD_METRONOME_800x600
+#define LCD_BPP			LCD_COLOR8
+//#define CONFIG_SYS_WHITE_ON_BLACK
+//#define CONFIG_LCD_LOGO
+//#define CONFIG_SYS_LCD_LOGOONLY_NOINFO
+#define WFM_DATA_SIZE  ( 1 << 14 )
+#define CONFIG_METRONOME_WF_LEN (64 * (1 << 10))
+#define CONFIG_METRONOME_WF_NAND_OFFSET (0x100000)
+#define BMP_LOGO_HEIGHT 0
+#define CONFIG_UBI_WF_VOLUME "waveforms"
+#define CONFIG_UBI_BOOTSPLASH_VOLUME "bootsplash"
+#define CONFIG_METRONOME_BOOTSPLASH_LEN 480000
+
+#define CONFIG_JZSOC_I2C
+#define CONFIG_HARD_I2C
+#define CONFIG_SYS_I2C_SPEED	100000
+#define CONFIG_SYS_I2C_SLAVE	0
+#define CONFIG_LPC_I2C_ADDR	0x54
 
 #define JZ4740_NORBOOT_CFG	JZ4740_NORBOOT_16BIT	/* NOR Boot config code */
 #define JZ4740_NANDBOOT_CFG	JZ4740_NANDBOOT_B8R3	/* NAND Boot config code */
@@ -65,6 +83,9 @@
 #define CONFIG_JZ_MMC		1
 #define CONFIG_FAT		1
 
+#define CONFIG_SYS_HUSH_PARSER
+#define CONFIG_SYS_PROMPT_HUSH_PS2 ">"
+#define CONFIG_CMDLINE_EDITING
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -92,27 +113,37 @@
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
-//#define CONFIG_CMD_UBI
+#define CONFIG_CMD_UBI
+#define CONFIG_CMD_MTDPARTS
 //#define CONFIG_CMD_JFFS2
 //#define CONFIG_JFFS2_NAND
 //#define CONFIG_JFFS2_CMDLINE
 #define CONFIG_CMD_UPDATE
+#define CONFIG_CMD_N516_TEST
 
 #define CONFIG_DOS_PARTITION
 
-//#define CONFIG_MTD_PARTITIONS
+#define CONFIG_MTD_PARTITIONS
 #define CONFIG_RBTREE
 
 #define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 
-#define CONFIG_BOOTDELAY	3
-#define CONFIG_BOOTFILE	        "uImage"	/* file to load */
-#define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=yaffs2 root=/dev/mtdblock2 rw"
-#define CONFIG_BOOTCOMMAND	"nand read 0x80600000 0x400000 0x300000;bootm"
-#define CONFIG_SYS_AUTOLOAD		"n"		/* No autoload */
+#define CONFIG_ZERO_BOOTDELAY_CHECK
+#define CONFIG_BOOTDELAY	0
+#define CONFIG_BOOTFILE	        uImage	/* file to load */
+#define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw " MTDPARTS_DEFAULT
+#define CONFIG_BOOTCOMMAND	"check_and_update; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
+#define CONFIG_SYS_AUTOLOAD	"n"		/* No autoload */
+#define CONFIG_IPADDR		192.168.111.1
+#define CONFIG_SERVERIP		192.168.111.2
+#define MTDIDS_DEFAULT		"nand0=jz4740-nand"
+#define MTDPARTS_DEFAULT	"mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
+#define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0" \
+				"stdout=serial\0stderr=lcd\0"
 
+#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 //#define CONFIG_NET_MULTI
 
 #define CONFIG_DRIVER_CS8900      1
@@ -137,7 +168,7 @@
 #define	CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)  /* Print Buffer Size */
 #define	CONFIG_SYS_MAXARGS		16		/* max number of command args*/
 
-#define CONFIG_SYS_MALLOC_LEN		128*1024
+#define CONFIG_SYS_MALLOC_LEN		1024*1024
 #define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
 
 #define CONFIG_SYS_SDRAM_BASE		0x80000000     /* Cached addr */
@@ -190,17 +221,17 @@
  * Define the partitioning of the NAND chip (only RAM U-Boot is needed here)
  */
 #define CONFIG_SYS_NAND_U_BOOT_OFFS	(128 << 10)	/* Offset to RAM U-Boot image	*/
-#define CONFIG_SYS_NAND_U_BOOT_SIZE	(256 << 10)	/* Size of RAM U-Boot image	*/
+#define CONFIG_SYS_NAND_U_BOOT_SIZE	(3 * (128 << 10))	/* Size of RAM U-Boot image	*/
 
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(128 << 10)	/* NAND chip block size		*/
 #define CONFIG_SYS_NAND_BADBLOCK_PAGE	63		/* NAND bad block was marked at this page in a block, starting from 0 */
 
 #ifdef CONFIG_ENV_IS_IN_NAND
 //#define CONFIG_ENV_SIZE			CONFIG_SYS_NAND_BLOCK_SIZE
-#define CONFIG_ENV_SIZE			(4096)
+#define CONFIG_ENV_SIZE			(128 * 1024)
 //#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_BLOCK_SIZE + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
 #define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_U_BOOT_OFFS)
-#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
+//#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
 #endif
 
 
