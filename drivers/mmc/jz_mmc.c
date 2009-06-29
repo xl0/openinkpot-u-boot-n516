@@ -72,6 +72,11 @@ do {						\
 static int use_4bit;                    /* Use 4-bit data bus */
 static int do_init;
 
+#define JZ_MMC_TIMEOUT (CONFIG_SYS_HZ * 3)
+
+extern ulong get_timer_masked(void);
+extern void reset_timer_masked(void);
+
 /* Stop the MMC clock and wait while it happens */
 static inline int jz_mmc_stop_clock(void)
 {
@@ -114,6 +119,12 @@ static inline u32 jz_mmc_calc_clkrt(int is_sd, u32 rate)
 void jz_mmc_set_clock(int sd, u32 rate)
 {
 	DEBUG(3, "%s: clock=%u\n", __func__, rate);
+
+	if (rate > 16000000)
+		sd = 1;
+	else
+		sd = 0;
+
 	jz_mmc_stop_clock();
 
 	/* Select clock source of MSC */
@@ -196,7 +207,8 @@ static int jz_mmc_receive_data(struct mmc_data *mmc_data)
 
 	timeout = 0x3ffffff;
 
-	while (timeout) {
+	reset_timer_masked();
+	while (get_timer_masked() < JZ_MMC_TIMEOUT) {
 		timeout--;
 		stat = REG_MSC_STAT;
 
@@ -211,8 +223,10 @@ static int jz_mmc_receive_data(struct mmc_data *mmc_data)
 		}
 		udelay(1);
 	}
-	if (!timeout)
+	if (get_timer_masked() >= JZ_MMC_TIMEOUT) {
+		printf("data read timeout\n");
 		return TIMEOUT;
+	}
 
 	/* Read data from RXFIFO. It could be FULL or PARTIAL FULL */
 	cnt = wblocklen;
@@ -283,10 +297,12 @@ static int jz_mmc_transmit_data(struct mmc_data *mmc_data)
 
 	return 0;
 }
+
 static int jz_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *data)
 {
 	u32 cmdat = 0;
-	int retval, timeout = 0x3fffff;
+	int retval;
+	//timeout = 0x3fffff;
 
 	DEBUG(3, "%s:%d: use_4bit=%d \n", __func__, __LINE__, use_4bit);
 	/* stop clock */
@@ -351,12 +367,15 @@ static int jz_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data
 	/* Start MMC/SD clock and send command to card */
 	jz_mmc_start_clock();
 
+	reset_timer_masked();
 	/* Wait for command completion */
-	while (timeout-- && !(REG_MSC_STAT & MSC_STAT_END_CMD_RES))
+	while (!(REG_MSC_STAT & MSC_STAT_END_CMD_RES) && (get_timer_masked() < JZ_MMC_TIMEOUT))
 		;
 
-	if (timeout == 0)
+	if (get_timer_masked() >= JZ_MMC_TIMEOUT) {
+		printf("Command execution timeout\n");
 		return TIMEOUT;
+	}
 
 	REG_MSC_IREG = MSC_IREG_END_CMD_RES; /* clear flag */
 
@@ -421,7 +440,6 @@ static int jz_mmc_init(struct mmc *mmc)
 	if (!__msc_card_detected())
 		return NO_CARD_ERR;
 
-	printf("MMC card found\n");
 	// Step-1: init GPIO
 	__gpio_as_msc();
 
@@ -457,6 +475,7 @@ int jz_mmc_initialize(bd_t *bis)
 	if (!mmc)
 		printf("Unable to malloc memory for mmc struct\n");
 
+	memset(mmc, 0, sizeof(*mmc));
 	sprintf(mmc->name, "JZ_MMC");
 	mmc->send_cmd = jz_mmc_send_cmd;
 	mmc->set_ios = jz_mmc_set_ios;
