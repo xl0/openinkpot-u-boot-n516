@@ -3,6 +3,12 @@
 
 #include <asm/types.h>
 
+#define SZ_512K				0x00080000
+
+#define SZ_1M				0x00100000
+#define SZ_2M				0x00200000
+#define SZ_4M				0x00400000
+
 struct update_layout_entry {
 	char *name;
 	u64 offset;
@@ -11,22 +17,15 @@ struct update_layout_entry {
 
 static struct update_layout_entry nand_layout[] = {
 	{
-		.name		= "uImage",
-		.offset		= 0x00100000,
-		.size		= 0x300000,
-	},
-	{
 		.name		= "uboot",
 		.offset		= 0x00000000,
-		.size		= 0x100000,
+		.size		= SZ_1M,
 	},
 	{
-		.name		= "UBI0",
-		.offset		= 0x00500000,
-		.size		= 0x1fb00000, 
+		.name		= "UBI",
+		.offset		= SZ_1M,
+		.size		= SZ_1M * 511, 
 	},
 };
-
-#define INVALID_FLASH_ADDRESS (0xffffffffffffffffULL)
 
 #endif /* __FIRMWARE_UPDATE_H */
