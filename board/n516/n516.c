@@ -91,6 +91,9 @@ static void gpio_init(void)
 	__gpio_as_input(GPIO_USB_DETE);
 
 	__gpio_as_output(GPIO_DISP_OFF_N);
+
+	__gpio_as_output(GPIO_LED_EN);
+	__gpio_set_pin(GPIO_LED_EN);
 }
 
 //----------------------------------------------------------------------
@@ -98,6 +101,7 @@ static void gpio_init(void)
 
 void board_early_init(void)
 {
+	REG_CPM_CLKGR = 0x0000000; /* Enable all clocks to peripherals */
 	gpio_init();
 }
 
