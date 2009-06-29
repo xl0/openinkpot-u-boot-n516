@@ -57,6 +57,10 @@
 
 #include "jz_lcd.h"
 
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+#include "metronome.h"
+#endif
+
 #ifdef CONFIG_LCD
 
 
@@ -166,6 +170,19 @@ static struct jzfb_info jzfb = {
 #endif
 	, 240, 128, 8, 100, 1, 1, 1, 0, 0, 0 
 #endif
+#if defined(CONFIG_JZLCD_METRONOME_800x600)
+	.cfg	= MODE_TFT_GEN | HSYNC_P | VSYNC_P | PSM_DISABLE | CLSM_DISABLE | SPLM_DISABLE | REVM_DISABLE,
+	.w	= 400,
+	.h	= 624,
+	.bpp	= 16,
+	.fclk	= 50,
+	.hsw	= 31,
+	.vsw	= 23,
+	.elw	= 31,
+	.blw	= 5,
+	.efw	= 2,
+	.bfw	= 1,
+#endif
 };
 
 /************************************************************************/
@@ -216,6 +233,9 @@ vidinfo_t panel_info = {
 #if defined(CONFIG_JZLCD_CSTN_320x240)
 	320, 240, LCD_BPP,
 #endif
+#if defined(CONFIG_JZLCD_METRONOME_800x600)
+	400, 624, LCD_COLOR16,
+#endif
 };
 
 
@@ -257,6 +277,36 @@ void lcd_setcolreg (ushort regno, ushort red, ushort green, ushort blue);
 void lcd_initcolregs (void);
 #endif
 
+static void print_regs(void)	/* debug */
+{
+	printf("REG_LCD_CFG:\t0x%8.8x\n", REG_LCD_CFG);
+	printf("REG_LCD_VSYNC:\t0x%8.8x\n", REG_LCD_VSYNC);
+	printf("REG_LCD_HSYNC:\t0x%8.8x\n", REG_LCD_HSYNC);
+	printf("REG_LCD_VAT:\t0x%8.8x\n", REG_LCD_VAT);
+	printf("REG_LCD_DAH:\t0x%8.8x\n", REG_LCD_DAH);
+	printf("REG_LCD_DAV:\t0x%8.8x\n", REG_LCD_DAV);
+	printf("REG_LCD_PS:\t0x%8.8x\n", REG_LCD_PS);
+	printf("REG_LCD_CLS:\t0x%8.8x\n", REG_LCD_CLS);
+	printf("REG_LCD_SPL:\t0x%8.8x\n", REG_LCD_SPL);
+	printf("REG_LCD_REV:\t0x%8.8x\n", REG_LCD_REV);
+	printf("REG_LCD_CTRL:\t0x%8.8x\n", REG_LCD_CTRL);
+	printf("REG_LCD_STATE:\t0x%8.8x\n", REG_LCD_STATE);
+	printf("REG_LCD_IID:\t0x%8.8x\n", REG_LCD_IID);
+	printf("REG_LCD_DA0:\t0x%8.8x\n", REG_LCD_DA0);
+	printf("REG_LCD_SA0:\t0x%8.8x\n", REG_LCD_SA0);
+	printf("REG_LCD_FID0:\t0x%8.8x\n", REG_LCD_FID0);
+	printf("REG_LCD_CMD0:\t0x%8.8x\n", REG_LCD_CMD0);
+
+	printf("==================================\n");
+	printf("REG_LCD_VSYNC:\t%d:%d\n", REG_LCD_VSYNC>>16, REG_LCD_VSYNC&0xfff);
+	printf("REG_LCD_HSYNC:\t%d:%d\n", REG_LCD_HSYNC>>16, REG_LCD_HSYNC&0xfff);
+	printf("REG_LCD_VAT:\t%d:%d\n", REG_LCD_VAT>>16, REG_LCD_VAT&0xfff);
+	printf("REG_LCD_DAH:\t%d:%d\n", REG_LCD_DAH>>16, REG_LCD_DAH&0xfff);
+	printf("REG_LCD_DAV:\t%d:%d\n", REG_LCD_DAV>>16, REG_LCD_DAV&0xfff);
+	printf("==================================\n");
+
+}
+
 /************************************************************************/
 
 void lcd_ctrl_init (void *lcdbase)
@@ -266,8 +316,11 @@ void lcd_ctrl_init (void *lcdbase)
 	jz_lcd_init_mem(lcdbase, &panel_info);
 	jz_lcd_desc_init(&panel_info);
 	jz_lcd_hw_init(&panel_info);
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	panel_info.vl_row = 600;
+#endif
+	__lcd_display_on();
 
-	__lcd_display_on() ;
 }
 
 /*----------------------------------------------------------------------*/
@@ -296,6 +349,9 @@ void lcd_enable (void)
 {
 	REG_LCD_CTRL &= ~(1<<4); /* LCDCTRL.DIS */
 	REG_LCD_CTRL |= 1<<3;    /* LCDCTRL.ENA*/
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	chip8track_init(&panel_info);
+#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -307,6 +363,13 @@ void lcd_disable (void)
 	/* REG_LCD_CTRL |= (1<<3); */  /* LCDCTRL.DIS, quikly disable */
 }
 
+void lcd_sync(void)
+{
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	chip8track_sync(&panel_info);
+#endif
+}
+
 /************************************************************************/
 
 
@@ -315,14 +378,27 @@ static int jz_lcd_init_mem(void *lcdbase, vidinfo_t *vid)
 	u_long palette_mem_size;
 	struct jz_fb_info *fbi = &vid->jz_fb;
 	int fb_size = vid->vl_row * (vid->vl_col * NBITS (vid->vl_bpix)) / 8;
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	int wfm_size =  2*vid->vl_col + WFM_DATA_SIZE
+		+ (2*vid->vl_col - WFM_DATA_SIZE %(2*vid->vl_col));
+#endif
 
 	fbi->screen = (u_long)lcdbase;
 	fbi->palette_size = 256;
 	palette_mem_size = fbi->palette_size * sizeof(u16);
 
-	debug("palette_mem_size = 0x%08lx\n", (u_long) palette_mem_size);
+	debug("lcdbase = %p, palette_mem_size = 0x%08lx\n", lcdbase, (u_long) palette_mem_size);
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	fbi->pfbcmdbegin = (char *)lcdbase;
+	fbi->pfbwfmbegin = (char *)lcdbase + 2 * vid->vl_col;
+	fbi->pfbdatabegin = (char *)lcdbase + wfm_size;
+	/* locate palette and descs at end of page following fb */
+	fbi->palette = (u_long)lcdbase + fb_size + wfm_size + PAGE_SIZE - palette_mem_size;
+	lcd_base = fbi->pfbdatabegin;
+#else
 	/* locate palette and descs at end of page following fb */
 	fbi->palette = (u_long)lcdbase + fb_size + PAGE_SIZE - palette_mem_size;
+#endif
 
 	return 0;
 }
@@ -659,8 +735,11 @@ static int  jz_lcd_hw_init(vidinfo_t *vid)
 	if (((jzfb.cfg & MODE_MASK) == MODE_STN_COLOR_DUAL) ||
 	    ((jzfb.cfg & MODE_MASK) == MODE_STN_MONO_DUAL))
 		REG_LCD_DA1 = fbi->fdadr1; /* frame descripter*/
-
+#ifdef DEBUG
+	print_regs();
+#endif
 	return 0;
+
 }
 
 #endif /* CONFIG_LCD */

@@ -59,6 +59,7 @@ struct lcd_desc{
 	unsigned int databuf;   /* LCDSAx */
 	unsigned int frame_id;  /* LCDFIDx */ 
 	unsigned int cmd;       /* LCDCMDx */
+#define mdelay(n) 		udelay((n)*1000)
 };
 
 #define MODE_MASK		0x0f
@@ -101,6 +102,12 @@ struct lcd_desc{
 
 #define VSYNC_P		(0 << 8)
 #define VSYNC_N		(1 << 8)
+
+
+#define PSM_DISABLE   (1 << 23)
+#define CLSM_DISABLE  (1 << 22)
+#define SPLM_DISABLE  (1 << 21)
+#define REVM_DISABLE  (1 << 20)
 
 #define DATA_NORMAL	(0 << 17)
 #define DATA_INVERSE	(1 << 17)

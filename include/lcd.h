@@ -201,6 +201,13 @@ struct jz_fb_info {
 	u_long	screen;		/* address of frame buffer */
 	u_long	palette;	/* address of palette memory */
 	u_int	palette_size;
+
+#if defined(CONFIG_JZLCD_METRONOME_800x600)
+	char *pfbcmdbegin;
+	char *pfbwfmbegin;
+	char *pfbdatabegin;
+	int   wfm_fc;
+#endif
 };
 typedef struct vidinfo {
 	ushort	vl_col;		/* Number of columns (i.e. 640) */
@@ -240,6 +247,11 @@ void	lcd_disable	(void);
 void	lcd_putc	(const char c);
 void	lcd_puts	(const char *s);
 void	lcd_printf	(const char *fmt, ...);
+void	lcd_clear	(void);
+
+#ifdef CONFIG_JZSOC
+void lcd_sync(void);
+#endif
 
 /* Allow boards to customize the information displayed */
 void lcd_show_board_info(void);
@@ -310,6 +322,7 @@ void lcd_show_board_info(void);
 /*
  * 8bpp color definitions
  */
+#ifndef CONFIG_JZLCD_METRONOME_800x600
 # define CONSOLE_COLOR_BLACK	0
 # define CONSOLE_COLOR_RED	1
 # define CONSOLE_COLOR_GREEN	2
@@ -319,6 +332,17 @@ void lcd_show_board_info(void);
 # define CONSOLE_COLOR_CYAN	6
 # define CONSOLE_COLOR_GREY	14
 # define CONSOLE_COLOR_WHITE	15	/* Must remain last / highest	*/
+#else
+# define CONSOLE_COLOR_BLACK	0x00
+# define CONSOLE_COLOR_RED	1
+# define CONSOLE_COLOR_GREEN	2
+# define CONSOLE_COLOR_YELLOW	3
+# define CONSOLE_COLOR_BLUE	4
+# define CONSOLE_COLOR_MAGENTA	5
+# define CONSOLE_COLOR_CYAN	6
+# define CONSOLE_COLOR_GREY	0x80
+# define CONSOLE_COLOR_WHITE	0xe0	/* Must remain last / highest	*/
+#endif
 
 #elif LCD_BPP == LCD_COLOR16
 /*
@@ -348,11 +372,18 @@ void lcd_show_board_info(void);
 #if defined(CONFIG_LCD_LOGO) && !defined(CONFIG_LCD_INFO_BELOW_LOGO)
 # define CONSOLE_ROWS		((panel_info.vl_row-BMP_LOGO_HEIGHT) \
 					/ VIDEO_FONT_HEIGHT)
+#elif defined(CONFIG_JZLCD_METRONOME_800x600)
+#define CONSOLE_ROWS		(800 / VIDEO_FONT_HEIGHT)
 #else
 # define CONSOLE_ROWS		(panel_info.vl_row / VIDEO_FONT_HEIGHT)
 #endif
 
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+#define CONSOLE_COLS		(600 / VIDEO_FONT_WIDTH)
+#else
 #define CONSOLE_COLS		(panel_info.vl_col / VIDEO_FONT_WIDTH)
+#endif
+
 #define CONSOLE_ROW_SIZE	(VIDEO_FONT_HEIGHT * lcd_line_length)
 #define CONSOLE_ROW_FIRST	(lcd_console_address)
 #define CONSOLE_ROW_SECOND	(lcd_console_address + CONSOLE_ROW_SIZE)

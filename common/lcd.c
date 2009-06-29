@@ -77,7 +77,7 @@ static inline void lcd_putc_xy (ushort x, ushort y, uchar  c);
 
 static int lcd_init (void *lcdbase);
 
-static int lcd_clear (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
+static int lcd_clear_cmd (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
 extern void lcd_ctrl_init (void *lcdbase);
 extern void lcd_enable (void);
 static void *lcd_logo (void);
@@ -111,6 +111,14 @@ static int lcd_getfgcolor (void);
 
 /*----------------------------------------------------------------------*/
 
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+static void console_scrollup (void)
+{
+	lcd_clear ();	/* dummy args */
+	lcd_sync();
+	console_row = 1;
+}
+#else
 static void console_scrollup (void)
 {
 #if 1
@@ -140,6 +148,7 @@ static void console_scrollup (void)
 		*t++ = val;
 #endif
 }
+#endif
 
 /*----------------------------------------------------------------------*/
 
@@ -176,9 +185,11 @@ static inline void console_newline (void)
 #ifndef CONFIG_SYS_LCD_LOGOONLY_NOINFO
 void lcd_putc (const char c)
 {
-	serial_putc(c); 
+	int i;
+	short new_console_col;
 
 	if (!lcd_is_enabled) {
+		serial_putc(c); 
 		return;
 	}
 
@@ -193,8 +204,16 @@ void lcd_putc (const char c)
 			return;
 
 	case '\t':	/* Tab (8 chars alignment) */
-			console_col +=  8;
-			console_col &= ~7;
+			new_console_col = console_col;
+			new_console_col +=  8;
+			new_console_col &= ~7;
+
+			for (i = console_col; i < min(new_console_col, CONSOLE_COLS); i++)
+				lcd_putc_xy(i * VIDEO_FONT_WIDTH,
+					console_row * VIDEO_FONT_HEIGHT,
+					' ');
+
+			console_col = new_console_col;
 
 			if (console_col >= CONSOLE_COLS) {
 				console_newline();
@@ -232,6 +251,9 @@ void lcd_puts (const char *s)
 	while (*s) {
 		lcd_putc (*s++);
 	}
+#if CONFIG_JZSOC	
+	lcd_sync();
+#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -251,6 +273,44 @@ void lcd_printf(const char *fmt, ...)
 /************************************************************************/
 /* ** Low-Level Graphics Routines					*/
 /************************************************************************/
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+static void lcd_drawchars(ushort x, ushort y, uchar *str, int count)
+{
+	uchar *img = (uchar *)lcd_base;
+	ushort x0, y0;
+	int i, j, k;
+	int l, m;
+
+	x0 = 799 - y;
+	y0 = x;
+
+
+	for (k = 0; k < count; k++)
+	{
+		uchar c = str[i];
+
+		for (i = 0; i < VIDEO_FONT_DATA_HEIGHT; i++) {
+			uchar bits = video_fontdata[c * VIDEO_FONT_DATA_HEIGHT + i];
+			
+			for (j = 0; j < 8; j++) {
+				uchar color = (bits & 0x80) ? lcd_color_fg : lcd_color_bg;
+				ushort x1 = y0 + j * VIDEO_FONT_SCALE;
+				ushort y1 = x0 - i * VIDEO_FONT_SCALE;
+
+				for (l = 0; l < VIDEO_FONT_SCALE; l++) {
+					for (m = 0; m < VIDEO_FONT_SCALE; m++) {
+						img[(x1 + l) * 800 + y1 - m] = color;
+					}
+				}
+				bits <<= 1;
+			}
+
+		}
+		y0 += VIDEO_FONT_WIDTH;
+	}
+	flush_cache_all();
+}
+#else
 
 static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 {
@@ -315,6 +375,7 @@ static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 	flush_cache_all();
 #endif
 }
+#endif
 
 /*----------------------------------------------------------------------*/
 
@@ -405,7 +466,15 @@ int drv_lcd_init (void)
 }
 
 /*----------------------------------------------------------------------*/
-static int lcd_clear (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+static int lcd_clear_cmd (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
+{
+	lcd_clear();
+	lcd_sync();
+
+	return 0;
+}
+
+void lcd_clear(void)
 {
 #if LCD_BPP == LCD_MONOCHROME
 	/* Setting the palette */
@@ -461,11 +530,15 @@ static int lcd_clear (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 	console_col = 0;
 	console_row = 0;
 
+#ifdef CONFIG_JzRISC		  /* JzRISC core */ 
+	flush_cache_all();
+#endif
+
 	return (0);
 }
 
 U_BOOT_CMD(
-	cls,	1,	1,	lcd_clear,
+	cls,	1,	1,	lcd_clear_cmd,
 	"clear screen",
 	NULL
 );
@@ -479,7 +552,7 @@ static int lcd_init (void *lcdbase)
 
 	lcd_ctrl_init (lcdbase);
 	lcd_is_enabled = 1;
-	lcd_clear (NULL, 1, 1, NULL);	/* dummy args */
+	lcd_clear ();	/* dummy args */
 	lcd_enable ();
 
 	/* Initialize the console */
@@ -508,11 +581,19 @@ ulong lcd_setmem (ulong addr)
 {
 	ulong size;
 	int line_length = (panel_info.vl_col * NBITS (panel_info.vl_bpix)) / 8;
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	int wfm_size =  2*panel_info.vl_col + WFM_DATA_SIZE
+		+ (2*panel_info.vl_col - WFM_DATA_SIZE %(2*panel_info.vl_col));
+#endif
 
 	debug ("LCD panel info: %d x %d, %d bit/pix\n",
 		panel_info.vl_col, panel_info.vl_row, NBITS (panel_info.vl_bpix) );
 
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	size = line_length * panel_info.vl_row + wfm_size;
+#else
 	size = line_length * panel_info.vl_row;
+#endif
 
 	/* Round up to nearest full page */
 	size = (size + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
@@ -538,7 +619,7 @@ static void lcd_setfgcolor (int color)
 #elif LCD_BPP == LCD_COLOR18
 	lcd_color_fg = color & 0xFFFFFFFF;
 #else
-	lcd_color_fg = color & 0xF;
+	lcd_color_fg = color;// & 0xF;
 #endif
 #endif
 }
@@ -556,7 +637,7 @@ static void lcd_setbgcolor (int color)
 #elif LCD_BPP == LCD_COLOR18
 	lcd_color_bg = color & 0xFFFFFFFF;
 #else
-	lcd_color_bg = color & 0xF;
+	lcd_color_bg = color;// & 0xF;
 #endif
 #endif
 }
