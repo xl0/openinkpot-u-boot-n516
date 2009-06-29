@@ -196,13 +196,18 @@ typedef int	(file_detectfs_func)(void);
 typedef int	(file_ls_func)(const char *dir);
 typedef long	(file_read_func)(const char *filename, void *buffer,
 				 unsigned long maxsize, unsigned long offset);
-
 struct filesystem {
 	file_detectfs_func *detect;
 	file_ls_func	   *ls;
 	file_read_func	   *read;
 	const char	    name[12];
 };
+
+struct file_stat {
+	int		is_directory:1;
+	unsigned long	size;
+};
+typedef void	(found_file_func)(char *filename, struct file_stat *stat);
 
 /* FAT tables */
 file_detectfs_func	file_fat_detectfs;
@@ -216,5 +221,6 @@ int file_fat_ls(const char *dir);
 long file_fat_read(const char *filename, void *buffer, unsigned long maxsize, unsigned long offset);
 const char *file_getfsname(int idx);
 int fat_register_device(block_dev_desc_t *dev_desc, int part_no);
+void dir_fat_read(const char *dirname, found_file_func *found_file_proc);
 
 #endif /* _FAT_H_ */

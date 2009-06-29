@@ -47,6 +47,8 @@ static  block_dev_desc_t *cur_dev = NULL;
 static unsigned long part_offset = 0;
 static int cur_part = 1;
 
+static found_file_func *found_file;
+
 #define DOS_PART_TBL_OFFSET	0x1be
 #define DOS_PART_MAGIC_OFFSET	0x1fe
 #define DOS_FS_TYPE_OFFSET	0x36
@@ -322,7 +324,7 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size, un
 		size -= data_size;
 	}
 
-	if (disk_read(startsect, size/FS_BLOCK_SIZE , buffer) < 0) {
+	if (disk_read(startsect, size/FS_BLOCK_SIZE , buffer) < size/FS_BLOCK_SIZE) {
 		FAT_DPRINT("Error reading data\n");
 		return -1;
 	}
@@ -331,7 +333,7 @@ get_cluster(fsdata *mydata, __u32 clustnum, __u8 *buffer, unsigned long size, un
 		unsigned int idx= size/FS_BLOCK_SIZE;
 
 		FAT_DPRINT("gc - reading tail sector (%u)\n", startsect + idx);
-		if (disk_read(startsect + idx, 1, tmpbuf) < 0) {
+		if (disk_read(startsect + idx, 1, tmpbuf) < 1) {
 			FAT_DPRINT("Error reading data\n");
 			return -1;
 		}
@@ -393,6 +395,7 @@ get_contents(fsdata *mydata, dir_entry *dentptr, __u8 *buffer,
 		/* search for consecutive clusters */
 		while(actsize < filesize) {
 			newclust = get_fatent(mydata, endclust);
+
 			if((newclust -1)!=endclust)
 				goto getit;
 			if (CHECK_CLUST(newclust, mydata->fatsize)) {
@@ -417,7 +420,7 @@ get_contents(fsdata *mydata, dir_entry *dentptr, __u8 *buffer,
 
 		return gotsize;
 getit:
-		if (do_read_clusters(mydata, &buffer, endclust, actsize, &offset, &gotsize) != 0)
+		if (do_read_clusters(mydata, &buffer, curclust, actsize, &offset, &gotsize) != 0)
 			return -1;
 
 		filesize -= actsize;
@@ -789,6 +792,7 @@ do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
     int files = 0, dirs = 0;
     long ret = 0;
     int firsttime;
+    struct file_stat stat;
 
     if (read_bootsectandvi (&bs, &volinfo, &mydata->fatsize)) {
 	FAT_DPRINT ("Error: reading boot sector\n");
@@ -880,11 +884,21 @@ do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
 			}
 			if (doit) {
 			    if (dirc == ' ') {
-				printf (" %8ld   %s%c\n",
-					(long) FAT2CPU32 (dentptr->size),
-					l_name, dirc);
+				if (found_file) {
+					stat.is_directory = 0;
+					stat.size = (unsigned long) FAT2CPU32 (dentptr->size);
+					found_file(l_name, &stat);
+				} else
+					printf (" %8ld   %s%c\n",
+							(long) FAT2CPU32 (dentptr->size),
+							l_name, dirc);
 			    } else {
-				printf ("            %s%c\n", l_name, dirc);
+				if (found_file) {
+					stat.is_directory = 1;
+					stat.size = 0;
+					found_file(l_name, &stat);
+				} else
+					printf ("            %s%c\n", l_name, dirc);
 			    }
 			}
 			dentptr++;
@@ -900,7 +914,7 @@ do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
 		}
 	    } else if (dentptr->name[0] == 0) {
 		FAT_DPRINT ("RootDentname == NULL - %d\n", i);
-		if (dols == LS_ROOT) {
+		if ((dols == LS_ROOT) && !found_file) {
 		    printf ("\n%d file(s), %d dir(s)\n\n", files, dirs);
 		    return 0;
 		}
@@ -934,11 +948,21 @@ do_fat_read (const char *filename, void *buffer, unsigned long maxsize,
 		}
 		if (doit) {
 		    if (dirc == ' ') {
-			printf (" %8ld   %s%c\n",
-				(long) FAT2CPU32 (dentptr->size), s_name,
-				dirc);
+			if (found_file) {
+				stat.is_directory = 0;
+				stat.size = (unsigned long) FAT2CPU32 (dentptr->size);
+				found_file(l_name, &stat);
+			} else
+				printf (" %8ld   %s%c\n",
+						(long) FAT2CPU32 (dentptr->size), s_name,
+						dirc);
 		    } else {
-			printf ("            %s%c\n", s_name, dirc);
+			if (found_file) {
+				stat.is_directory = 1;
+				stat.size = 0;
+				found_file(l_name, &stat);
+			} else
+				printf ("            %s%c\n", s_name, dirc);
 		    }
 		}
 		dentptr++;
@@ -1067,4 +1091,11 @@ file_fat_read(const char *filename, void *buffer, unsigned long maxsize, unsigne
 {
 	printf("reading %s\n",filename);
 	return do_fat_read(filename, buffer, maxsize, offset, LS_NO);
+}
+
+void dir_fat_read(const char *dirname, found_file_func *found_file_proc)
+{
+	found_file = found_file_proc;
+	do_fat_read(dirname, NULL, 0, 0, LS_YES);
+	found_file = NULL;
 }
