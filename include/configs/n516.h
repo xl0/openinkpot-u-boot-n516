@@ -26,6 +26,7 @@
 #define __CONFIG_H
 
 //#define DEBUG
+#define DEBUG_SHELL
 
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
@@ -168,7 +169,7 @@
 #define	CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16)  /* Print Buffer Size */
 #define	CONFIG_SYS_MAXARGS		16		/* max number of command args*/
 
-#define CONFIG_SYS_MALLOC_LEN		1024*1024
+#define CONFIG_SYS_MALLOC_LEN		1024*1024*2
 #define CONFIG_SYS_BOOTPARAMS_LEN	128*1024
 
 #define CONFIG_SYS_SDRAM_BASE		0x80000000     /* Cached addr */
