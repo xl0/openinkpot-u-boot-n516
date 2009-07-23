@@ -26,7 +26,7 @@
 #define __CONFIG_H
 
 //#define DEBUG
-#define DEBUG_SHELL
+//#define DEBUG_SHELL
 
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
