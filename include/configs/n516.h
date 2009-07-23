@@ -135,7 +135,7 @@
 #define CONFIG_BOOTDELAY	0
 #define CONFIG_BOOTFILE	        uImage	/* file to load */
 #define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw " MTDPARTS_DEFAULT
-#define CONFIG_BOOTCOMMAND	"check_and_update; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
+#define CONFIG_BOOTCOMMAND	"check_and_update; setenv bootargs $bootargs $batt_level_param; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
 #define CONFIG_SYS_AUTOLOAD	"n"		/* No autoload */
 #define CONFIG_IPADDR		192.168.111.1
 #define CONFIG_SERVERIP		192.168.111.2
