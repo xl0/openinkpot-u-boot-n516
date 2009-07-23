@@ -608,12 +608,12 @@ static int check_for_menu_key(void)
 	__gpio_set_pin(GPIO_LED_EN);
 
 	do {
-		char buf[2];
+		char buf[30];
 		if (i2c_read(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1))
 			return -1;
 		if ((key >= 0x81) && (key <= 0x87)) {
-			sprintf(buf, "%d", key - 0x81);
-			setenv("batt_level_code", buf);
+			sprintf(buf, "n516-lpc.batt_level=%d", key - 0x81);
+			setenv("batt_level_param", buf);
 		}
 	} while (key && (key != N516_KEY_MENU) && (key != N516_KEY_POWER));
 
