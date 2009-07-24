@@ -566,9 +566,9 @@ static int process_update(char *filename, int dry_run)
 	}
 
 out:
-	if (ubi)
-		ubi_cleanup();
-	ubi = NULL;
+//	if (ubi)
+//		ubi_cleanup();
+//	ubi = NULL;
 
 	return ret;
 }
