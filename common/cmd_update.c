@@ -787,6 +787,7 @@ static int do_checkupdate(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 		goto out;
 	}
 
+	saveenv();
 	lcd_clear();
 	log("\tStarting update...\n");
 
