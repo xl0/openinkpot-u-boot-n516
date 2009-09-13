@@ -46,6 +46,35 @@
 #define N516_KEY_POWER	0x1c
 #define N516_KEY_1	0x04
 
+#define KEY_RESERVED            0
+#define KEY_ESC                 1
+#define KEY_1                   2
+#define KEY_2                   3
+#define KEY_3                   4
+#define KEY_4                   5
+#define KEY_5                   6
+#define KEY_6                   7
+#define KEY_7                   8
+#define KEY_8                   9
+#define KEY_9                   10
+#define KEY_0                   11
+#define KEY_ENTER               28
+#define KEY_SPACE               57
+#define KEY_UP                  103
+#define KEY_PAGEUP              104
+#define KEY_LEFT                105
+#define KEY_RIGHT               106
+#define KEY_DOWN                108
+#define KEY_PAGEDOWN            109
+#define KEY_POWER               116
+#define KEY_MENU                139
+#define KEY_SLEEP               142
+#define KEY_WAKEUP              143
+#define KEY_DIRECTION           153
+#define KEY_PLAYPAUSE           164
+#define KEY_SEARCH              217
+
+
 struct fw_update_head {
 	char magic[4];
 	u32 header_size;
@@ -595,48 +624,107 @@ U_BOOT_CMD(
 	" - load firmware update file from SD card, parse and flash it\n"
 );
 
+static const unsigned int keymap[][2] = {
+	{0x05, KEY_0},
+	{0x04, KEY_1},
+	{0x03, KEY_2},
+	{0x02, KEY_3},
+	{0x01, KEY_4},
+	{0x0b, KEY_5},
+	{0x0a, KEY_6},
+	{0x09, KEY_7},
+	{0x08, KEY_8},
+	{0x07, KEY_9},
+	{0x1a, KEY_PAGEUP},
+	{0x19, KEY_PAGEDOWN},
+	{0x17, KEY_LEFT},
+	{0x16, KEY_RIGHT},
+	{0x14, KEY_UP},
+	{0x15, KEY_DOWN},
+	{0x13, KEY_ENTER},
+	{0x11, KEY_SPACE},
+	{0x0e, KEY_MENU},
+	{0x10, KEY_DIRECTION},
+	{0x0f, KEY_SEARCH},
+	{0x0d, KEY_PLAYPAUSE},
+	{0x1d, KEY_ESC},
+	{0x1c, KEY_POWER},
+	{0x1e, KEY_SLEEP},
+	{0x1f, KEY_WAKEUP},
+};
+
+static int find_key(unsigned char code)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(keymap); i++) {
+		if (keymap[i][0] == code) {
+			return keymap[i][1];
+		}
+	}
+	return -1;
+}
+
+static int key_to_number(int key)
+{
+	if ((key >= KEY_1) && (key <= KEY_0))
+		return (key - KEY_1 + 1) % 10;
+	else
+		return -1;
+}
+
 #define KEYPRESS_TIMEOUT 5000000
 #define BLINK_PERIOD 300000
+#define I2C_DELAY 70000
 
 static int check_for_menu_key(void)
 {
-	uchar key;
+	uchar code;
+	int key;
 	unsigned int t;
 
+	log(" Press any key to enter update mode\n");
+
 	/* Switch LPC to normal mode */
-	key = 0x02;
-	i2c_write(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1);
+	code = 0x02;
+	i2c_write(CONFIG_LPC_I2C_ADDR, 0, 0, &code, 1);
 
 	t = 0;
 	while (t < KEYPRESS_TIMEOUT) {
 		__gpio_clear_pin(GPIO_LED_EN);
 		udelay(BLINK_PERIOD / 2);
 		__gpio_set_pin(GPIO_LED_EN);
-		udelay(BLINK_PERIOD / 2);
+		udelay(BLINK_PERIOD / 2 - I2C_DELAY);
 		t += BLINK_PERIOD;
+
+		key = -1;
+		do {
+			char buf[30];
+			if (i2c_read(CONFIG_LPC_I2C_ADDR, 0, 0, &code, 1))
+				break;
+
+			if ((code >= 0x81) && (code <= 0x87)) {
+				sprintf(buf, "n516-lpc.batt_level=%d", code - 0x81);
+				setenv("batt_level_param", buf);
+			}
+			key = find_key(code);
+		} while ((key < 0) && code);
+
+		if (key > 0)
+			break;
 	}
 
-	do {
-		char buf[30];
-		if (i2c_read(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1))
-			return -1;
-		if ((key >= 0x81) && (key <= 0x87)) {
-			sprintf(buf, "n516-lpc.batt_level=%d", key - 0x81);
-			setenv("batt_level_param", buf);
-		}
-	} while (key && (key != N516_KEY_MENU) && (key != N516_KEY_POWER));
-
-	if (key == N516_KEY_POWER) {
+	if (key == KEY_POWER) {
 		lcd_clear();
 		lcd_sync();
-		key = 0x01;
+		code = 0x01;
 		__gpio_set_pin(GPIO_LED_EN);
 
 		while (1)
-			i2c_write(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1);
+			i2c_write(CONFIG_LPC_I2C_ADDR, 0, 0, &code, 1);
 	}
 
-	if (key)
+	if (key > 0)
 		return 0;
 	else
 		return -1;
@@ -677,40 +765,11 @@ static void file_check(char *filename, struct file_stat *stat)
 	}
 }
 
-static const unsigned int keymap[][2] = {
-	{0x05, 0},
-	{0x04, 1},
-	{0x03, 2},
-	{0x02, 3},
-	{0x01, 4},
-	{0x0b, 5},
-	{0x0a, 6},
-	{0x09, 7},
-	{0x08, 8},
-	{0x07, 9},
-	{0x1a, -2},
-	{0x19, -2},
-	{0x17, -2},
-	{0x16, -2},
-	{0x14, -2},
-	{0x15, -2},
-	{0x13, -2},
-	{0x11, -2},
-	{0x0e, -2},
-	{0x10, -2},
-	{0x0f, -2},
-	{0x0d, -2},
-	{0x1d, -1},
-	{0x1c, -2},
-	{0x1e, -2},
-	{0x1f, -2},
-};
-
 static int ask_user(char *buf, unsigned int len)
 {
-	uchar key;
+	uchar code;
 	int i, n;
-	int res;
+	int key, num;
 	struct file_entry *cur;
 
 
@@ -731,33 +790,31 @@ static int ask_user(char *buf, unsigned int len)
 	lcd_sync();
 
 	do {
-		res = -2;
-		if (i2c_read(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1))
+		key = 0;
+		num = -1;
+
+		if (i2c_read(CONFIG_LPC_I2C_ADDR, 0, 0, &code, 1))
 			continue;
 
-		for (i = 0; i < ARRAY_SIZE(keymap); i++) {
-			if (keymap[i][0] == key) {
-				res = keymap[i][1];
+		key = find_key(code);
+		num = key_to_number(key);
+	} while ((key != KEY_ESC) && (num < 1));
+
+	if (num > 0) {
+		i = 0;
+		list_for_each_entry(cur, &found_files, link) {
+			i++;
+			if (i == num) {
+				strncpy(buf, cur->filename, len - 1);
 				break;
 			}
 		}
 
-		if (res + 1 > n)
-			continue;
-
-	} while (res == -2);
-
-	if (res >= 0) {
-		i = 0;
-		list_for_each_entry(cur, &found_files, link) {
-			i++;
-			if (i == res)
-				break;
-		}
-		strncpy(buf, cur->filename, len - 1);
+		if (i != num)
+			return -1;
 	}
 
-	return res;
+	return num;
 }
 
 extern void _machine_restart(void);
