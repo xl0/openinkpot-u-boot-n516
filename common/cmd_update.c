@@ -595,17 +595,26 @@ U_BOOT_CMD(
 	" - load firmware update file from SD card, parse and flash it\n"
 );
 
+#define KEYPRESS_TIMEOUT 5000000
+#define BLINK_PERIOD 300000
+
 static int check_for_menu_key(void)
 {
 	uchar key;
+	unsigned int t;
 
 	/* Switch LPC to normal mode */
 	key = 0x02;
 	i2c_write(CONFIG_LPC_I2C_ADDR, 0, 0, &key, 1);
 
-	__gpio_clear_pin(GPIO_LED_EN);
-	udelay(1000000);
-	__gpio_set_pin(GPIO_LED_EN);
+	t = 0;
+	while (t < KEYPRESS_TIMEOUT) {
+		__gpio_clear_pin(GPIO_LED_EN);
+		udelay(BLINK_PERIOD / 2);
+		__gpio_set_pin(GPIO_LED_EN);
+		udelay(BLINK_PERIOD / 2);
+		t += BLINK_PERIOD;
+	}
 
 	do {
 		char buf[30];
