@@ -180,12 +180,12 @@ static int init_fat(void)
 
 	dev_desc = get_dev("mmc", 0);
 	if (dev_desc==NULL) {
-		printf("\nERROR: Invalid mmc device. Please, check your SD/MMC card.\n");
+		printf("\nERROR: Invalid mmc device. Please check your SD/MMC card.\n");
 		return -1;
 	}
 
 	if (fat_register_device(dev_desc, part)!=0) {
-		printf("\nERROR: Unable to use %s %d:%d for update. Please, check or replace your card.\n", "mmc", 0, part);
+		printf("\nERROR: Unable to use %s %d:%d for update. Please check or replace your card.\n", "mmc", 0, part);
 		return -1;
 	}
 
@@ -347,11 +347,11 @@ static int process_block_raw(char *filename, struct block_properties *block_prop
 
 	layout = get_block_flash_layout(block_prop->name);
 	if (!layout) {
-		log("Cannot to find layout for block '%s', skip it\n", block_prop->name);
+		log("Cannot find layout for block '%s', skipping it\n", block_prop->name);
 		return 1;
 	}
 
-	log("Flashing block `%s':\n", block_prop->name);
+	log("Flashing firmware part `%s':\n", block_prop->name);
 
 	show_progress("Erasing flash...");
 
@@ -408,7 +408,7 @@ static int process_block_ubivol(char *filename, struct block_properties *block_p
 	struct ubi_volume *vol;
 	u32 block_crc32;
 
-	log("Flashing block `%s':\n", block_prop->name);
+	log("Flashing firmware part `%s':\n", block_prop->name);
 
 	if (!ubi) {
 		err = ubi_initialize();
@@ -421,13 +421,13 @@ static int process_block_ubivol(char *filename, struct block_properties *block_p
 	for (i = 0; i < ubi->vtbl_slots; i++) {
 		vol = ubi->volumes[i];
 		if (vol && !strcmp(vol->name, block_prop->name)) {
-			printf("Volume \"%s\" found at volume id %d\n", block_prop->name, i);
+			printf("Volume \"%s\" is found at volume id %d\n", block_prop->name, i);
 			found = 1;
 			break;
 		}
 	}
 	if (!found) {
-		log("ERROR: %s volume is not found\n", block_prop->name);
+		log("ERROR: Volume \"%s\" is not found\n", block_prop->name);
 		err = 1;
 		goto out;
 	}
