@@ -110,7 +110,6 @@ static u64 __get_unaligned_le64(unsigned char *p)
 
 #define show_progress(msg, args...)	\
 {					\
-	eprintf("\r\t" msg, ##args);	\
 	printf("\r" msg "\n", ##args);	\
 } while(0)
 
