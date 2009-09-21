@@ -854,11 +854,11 @@ static int do_checkupdate(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	saveenv();
 	lcd_clear();
-	log("\tStarting update...\n");
+	log("\tStarting update...\n\n");
 
 	res = process_update(filename, dry_run);
 	if (!res) {
-		log("Update completed succesfully. Resetting...\n");
+		log("Update completed succesfully.\nRebooting...\n");
 		_machine_restart();
 	}
 
