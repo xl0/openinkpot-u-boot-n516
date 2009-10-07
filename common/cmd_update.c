@@ -351,7 +351,7 @@ static int process_block_raw(char *filename, struct block_properties *block_prop
 		return 1;
 	}
 
-	log("Flashing firmware part `%s':\n", block_prop->name);
+	log("Flashing `%s'", block_prop->name);
 
 	show_progress("Erasing flash...");
 
@@ -548,6 +548,7 @@ static int process_update(char *filename, int dry_run)
 		goto out;
 	}
 
+	log("\n"); /* Empty line for better output */
 
 	while (p < header + fw_head.header_size) {
 		struct block_properties block_prop;
@@ -858,7 +859,7 @@ static int do_checkupdate(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	res = process_update(filename, dry_run);
 	if (!res) {
-		log("Update completed succesfully.\nRebooting...\n");
+		log("\nUpdate completed succesfully.\nRebooting...\n");
 		_machine_restart();
 	}
 
