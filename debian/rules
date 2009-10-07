@@ -1,0 +1,59 @@
+#!/usr/bin/make -f
+
+DEB_HOST_ARCH ?= $(dpkg-architecture -qDEB_HOST_ARCH)
+
+ifeq (mipsel,$(DEB_HOST_ARCH))
+  flavours := n516_nand_config
+else
+  $(error Unknown architecture $(DEB_HOST_ARCH))
+endif
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+  NUMJOBS = -j$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+build: build-arch build-indep
+
+build-arch: build-arch-stamp
+build-arch-stamp:
+	for FLAVOUR in $(flavours); do \
+		$(MAKE) O=$(CURDIR)/build-$$FLAVOUR $(NUMJOBS) $$FLAVOUR && \
+		$(MAKE) O=$(CURDIR)/build-$$FLAVOUR $(NUMJOBS) CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-; \
+	done
+	touch $@
+
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -rf build-*
+	$(MAKE) distclean
+	dh_clean 
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_install -s
+
+binary-common:
+
+binary-indep:
+
+binary-arch: build install
+	dh_testdir -s
+	dh_testroot -s
+	dh_link -s
+	dh_strip -s
+	dh_compress -s
+	dh_fixperms -s
+	dh_installdeb -s
+	dh_gencontrol -s
+	dh_builddeb -s
+ifeq (,$(flavours))
+	touch debian/files # some archs don't produce bootloaders
+endif
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch configure

@@ -1,0 +1,13 @@
+Source: uboot-n516
+Section: core
+Priority: optional
+Maintainer: Yauhen Kharuzhy <jekhor@gmail.com>
+Uploaders: Mikhail Gusarov <dottedmag@dottedmag.net>
+Build-Depends: debhelper (>= 7)
+XCS-Cross-Host-Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.3
+
+Package: uboot-n516
+Architecture: mipsel
+Description: Das U-Boot for Hanvon N516
+ Hanvon N516 U-Boot image.
