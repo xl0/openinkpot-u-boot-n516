@@ -20,19 +20,21 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= lib$(BOARD).a
+LIB	= $(obj)lib$(BOARD).a
 
-OBJS	= $(BOARD).o flash.o
+COBJS	= $(BOARD).o flash.o
+
+OBJS	= $(addprefix $(obj),$(COBJS))
 SOBJS	= 
 
-$(LIB):	.depend $(OBJS) $(SOBJS)
+$(LIB):	$(obj).depend $(OBJS) $(SOBJS)
 	$(AR) crv $@ $(OBJS) $(SOBJS)
 
 #########################################################################
 
-.depend:	Makefile $(SOBJS:.o=.S) $(OBJS:.o=.c)
-		$(CC) -M $(CFLAGS) $(SOBJS:.o=.S) $(OBJS:.o=.c) > $@
+$(obj).depend:	Makefile $(SOBJS:.o=.S) $(COBJS:.o=.c)
+		$(CC) -M $(CFLAGS) $(SOBJS:.o=.S) $(COBJS:.o=.c) > $@
 
-sinclude .depend
+sinclude $(obj).depend
 
 #########################################################################

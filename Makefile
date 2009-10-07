@@ -3211,6 +3211,7 @@ n516_config		: 	unconfig
 	@./mkconfig -a n516 mips mips n516
 
 n516_nand_config	:	unconfig
+	@mkdir -p $(obj)include $(obj)board/n516
 	@echo "#define CONFIG_NAND_U_BOOT" > $(obj)include/config.h
 	@echo "Compile NAND boot image for n516"
 	@./mkconfig -a n516 mips mips n516
