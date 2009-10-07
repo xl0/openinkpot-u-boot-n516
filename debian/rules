@@ -5,7 +5,7 @@ DEB_HOST_ARCH ?= $(dpkg-architecture -qDEB_HOST_ARCH)
 ifeq (mipsel,$(DEB_HOST_ARCH))
   flavours := n516_nand_config
 else
-  $(error Unknown architecture $(DEB_HOST_ARCH))
+  flavours :=
 endif
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
