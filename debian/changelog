@@ -1,3 +1,9 @@
+uboot-n516 (2009.03-3) asimov; urgency=low
+
+  * Set kernel panic timeout to 5 seconds
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Fri, 16 Oct 2009 14:26:55 +0300
+
 uboot-n516 (2009.03-2) asimov; urgency=low
 
   * Cosmetic fixes.
