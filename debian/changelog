@@ -1,3 +1,9 @@
+uboot-n516 (2009.03-4) asimov; urgency=low
+
+  * Add forgotten space to bootargs
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Thu, 22 Oct 2009 01:50:25 +0300
+
 uboot-n516 (2009.03-3) asimov; urgency=low
 
   * Set kernel panic timeout to 5 seconds
