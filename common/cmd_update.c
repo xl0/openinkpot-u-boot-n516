@@ -742,8 +742,13 @@ struct file_entry {
 static void file_check(char *filename, struct file_stat *stat)
 {
 	struct file_entry *f, *cur;
+    char *c;
 
-	if (!stat->is_directory && strstr(filename, CONFIG_UPDATE_FILEEXT)) {
+	if (stat->is_directory)
+        return;
+
+    c = strstr(filename, CONFIG_UPDATE_FILEEXT);
+    if (c && *(c + sizeof(CONFIG_UPDATE_FILEEXT) - 1) == '\0') {
 		f = malloc(sizeof(*f));
 		if (!f) {
 			printf("Failed to allocate memory\n");
