@@ -103,7 +103,6 @@
 #undef CONFIG_CMD_LOADB	/* loadb			*/
 #undef CONFIG_CMD_LOADS	/* loads			*/
 #undef CONFIG_CMD_NFS		/* NFS support			*/
-#undef CONFIG_CMD_RUN		/* run command in env variable	*/
 #undef CONFIG_CMD_SETGETDCR	/* DCR support on 4xx		*/
 #undef CONFIG_CMD_SOURCE	/* "source" command support	*/
 #undef CONFIG_CMD_XIMG		/* Load part of Multi Image	*/
