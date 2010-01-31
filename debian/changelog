@@ -1,3 +1,13 @@
+uboot-n516 (2009.03-4) zelazny; urgency=low
+
+  * Set kernel panic timeout to 5 seconds
+  * Update changelog
+  * Add forgotten space to bootargs
+  * Update changelog
+  * Enable run command
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Sun, 31 Jan 2010 15:35:41 +0200
+
 uboot-n516 (2009.03-3) zelazny; urgency=low
 
   * Do not show .oifw.zip files in update menu (OI#326)
