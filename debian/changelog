@@ -1,14 +1,8 @@
-uboot-n516 (2009.03-4) asimov; urgency=low
+uboot-n516 (2009.03-3) zelazny; urgency=low
 
-  * Add forgotten space to bootargs
+  * Do not show .oifw.zip files in update menu (OI#326)
 
- -- Yauhen Kharuzhy <jekhor@gmail.com>  Thu, 22 Oct 2009 01:50:25 +0300
-
-uboot-n516 (2009.03-3) asimov; urgency=low
-
-  * Set kernel panic timeout to 5 seconds
-
- -- Yauhen Kharuzhy <jekhor@gmail.com>  Fri, 16 Oct 2009 14:26:55 +0300
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sat, 16 Jan 2010 13:41:15 +0600
 
 uboot-n516 (2009.03-2) asimov; urgency=low
 
