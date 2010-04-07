@@ -290,14 +290,12 @@
  * GPIO definition
  */
 #define GPIO_SD_VCC_EN_N	113 /* GPD17 */
-#define GPIO_SD_CD_N           103 /* GPD7 */
-#define GPIO_SD_WP             111 /* GPD15 */
-#define GPIO_USB_DETE          115 /* GPD6 */
-//#define GPIO_DC_DETE_N               103 /* GPD7 */
-#define GPIO_CHARG_STAT_N      112 /* GPD15 */
-#define GPIO_DISP_OFF_N                97 /* GPD1 */
-#define GPIO_UDC_HOTPLUG       100 /* GPD4 */
-#define GPIO_LED_EN            124 /* GPD28 */
+#define GPIO_SD_CD_N		103 /* GPD7 */
+#define GPIO_USB_DETE		115 /* GPD6 */
+#define GPIO_CHARG_STAT_N	112 /* GPD15 */
+#define GPIO_DISP_OFF_N		97 /* GPD1 */
+#define GPIO_LED_EN		124 /* GPD28 */
+#define GPIO_HP_DETECT		116 /* GPD28 */
 
 #define GPIO_RST_L          50   /* GPB18 LCD_SPL */
 #define GPIO_LCDRDY         49   /* GPB17 LCD_CLS */

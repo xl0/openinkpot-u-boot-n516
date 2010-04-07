@@ -62,12 +62,7 @@ static void gpio_init(void)
 	/*
 	 * Initialize LCD pins
 	 */
-	__gpio_as_lcd_18bit();
-
-	/*
-	 * Initialize SSI pins
-	 */
-	__gpio_as_ssi();
+	__gpio_as_lcd_16bit();
 
 	/*
 	 * Initialize I2C pins
@@ -83,10 +78,6 @@ static void gpio_init(void)
 	__gpio_as_input(GPIO_SD_CD_N);
 	__gpio_disable_pull(GPIO_SD_CD_N);
 
-	__gpio_as_input(GPIO_SD_WP);
-	__gpio_disable_pull(GPIO_SD_WP);
-
-//	__gpio_as_input(GPIO_DC_DETE_N);
 	__gpio_as_input(GPIO_CHARG_STAT_N);
 	__gpio_as_input(GPIO_USB_DETE);
 
@@ -94,6 +85,9 @@ static void gpio_init(void)
 
 	__gpio_as_output(GPIO_LED_EN);
 	__gpio_set_pin(GPIO_LED_EN);
+
+	__gpio_as_input(GPIO_HP_DETECT);
+	__gpio_disable_pull(GPIO_HP_DETECT);
 }
 
 //----------------------------------------------------------------------
