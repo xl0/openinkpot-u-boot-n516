@@ -1,3 +1,13 @@
+uboot-n516 (2009.03-5) zelazny; urgency=low
+
+  [ Lars-Peter Clausen ]
+  * n516: Fix gpio initalisation
+
+  [ Mikhail Gusarov ]
+  * Upload
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Thu, 08 Apr 2010 04:16:13 +0700
+
 uboot-n516 (2009.03-4) zelazny; urgency=low
 
   * Set kernel panic timeout to 5 seconds
