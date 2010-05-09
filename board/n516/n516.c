@@ -39,6 +39,11 @@ void _machine_restart(void)
 
 static void gpio_init(void)
 {
+	REG_GPIO_PXPES(0) = 0xffffffff;
+	REG_GPIO_PXPES(1) = 0xffffffff;
+	REG_GPIO_PXPES(2) = 0xffffffff;
+	REG_GPIO_PXPES(3) = 0xffffffff;
+
 	/*
 	 * Initialize NAND Flash Pins
 	 */
@@ -62,12 +67,7 @@ static void gpio_init(void)
 	/*
 	 * Initialize LCD pins
 	 */
-	__gpio_as_lcd_18bit();
-
-	/*
-	 * Initialize SSI pins
-	 */
-	__gpio_as_ssi();
+	__gpio_as_lcd_16bit();
 
 	/*
 	 * Initialize I2C pins
@@ -83,17 +83,33 @@ static void gpio_init(void)
 	__gpio_as_input(GPIO_SD_CD_N);
 	__gpio_disable_pull(GPIO_SD_CD_N);
 
-	__gpio_as_input(GPIO_SD_WP);
-	__gpio_disable_pull(GPIO_SD_WP);
+//	__gpio_as_input(GPIO_SD_WP);
+//	__gpio_disable_pull(GPIO_SD_WP);
 
 //	__gpio_as_input(GPIO_DC_DETE_N);
-	__gpio_as_input(GPIO_CHARG_STAT_N);
-	__gpio_as_input(GPIO_USB_DETE);
+//	__gpio_as_input(GPIO_CHARG_STAT_N);
+//	__gpio_as_input(GPIO_USB_DETE);
 
 	__gpio_as_output(GPIO_DISP_OFF_N);
 
 	__gpio_as_output(GPIO_LED_EN);
 	__gpio_set_pin(GPIO_LED_EN);
+	__gpio_as_input(127);
+}
+
+static void cpm_init(void)
+{
+	__cpm_stop_ipu();
+	__cpm_stop_cim();
+	__cpm_stop_ssi();
+	__cpm_stop_uart1();
+	__cpm_stop_sadc();
+	__cpm_stop_uhc();
+	__cpm_stop_udc();
+	__cpm_stop_aic1();
+	__cpm_stop_aic2();
+	__cpm_suspend_udcphy();
+	__cpm_suspend_usbphy();
 }
 
 //----------------------------------------------------------------------
@@ -101,8 +117,8 @@ static void gpio_init(void)
 
 void board_early_init(void)
 {
-	REG_CPM_CLKGR = 0x0000000; /* Enable all clocks to peripherals */
 	gpio_init();
+	cpm_init();
 }
 
 //----------------------------------------------------------------------
