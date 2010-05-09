@@ -1,3 +1,10 @@
+uboot-n516 (2009.03-6) zelazny; urgency=low
+
+  * JZ4740: Add macros for USB suspending
+  * N516: Disable pull-ups and unused blocks at initialization
+
+ -- Yauhen Kharuzhy <jekhor@gmail.com>  Mon, 10 May 2010 00:38:17 +0300
+
 uboot-n516 (2009.03-5) zelazny; urgency=low
 
   [ Lars-Peter Clausen ]
