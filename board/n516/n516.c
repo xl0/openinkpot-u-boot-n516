@@ -83,12 +83,14 @@ static void gpio_init(void)
 	__gpio_as_input(GPIO_SD_CD_N);
 	__gpio_disable_pull(GPIO_SD_CD_N);
 
-//	__gpio_as_input(GPIO_SD_WP);
-//	__gpio_disable_pull(GPIO_SD_WP);
+	__gpio_as_input(GPIO_CHARG_STAT_N);
+	__gpio_as_input(GPIO_USB_DETE);
 
-//	__gpio_as_input(GPIO_DC_DETE_N);
-//	__gpio_as_input(GPIO_CHARG_STAT_N);
-//	__gpio_as_input(GPIO_USB_DETE);
+	__gpio_as_output(GPIO_LED_EN);
+	__gpio_set_pin(GPIO_LED_EN);
+
+	__gpio_as_input(GPIO_HP_DETECT);
+	__gpio_disable_pull(GPIO_HP_DETECT);
 
 	__gpio_as_output(GPIO_DISP_OFF_N);
 
