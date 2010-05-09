@@ -371,7 +371,8 @@ static inline u32 jz_readl(u32 address)
 /* Sleep Control Register */
 #define CPM_SCR_O1ST_BIT	8
 #define CPM_SCR_O1ST_MASK	(0xff << CPM_SCR_O1ST_BIT)
-#define CPM_SCR_USBPHY_ENABLE	(1 << 6)
+#define CPM_SCR_UDCPHY_ENABLE	(1 << 6)
+#define CPM_SCR_USBPHY_DISABLE	(1 << 7)
 #define CPM_SCR_OSC_ENABLE	(1 << 4)
 
 /* Hibernate Control Register */
@@ -3272,7 +3273,8 @@ do {						\
 	((REG_CPM_SCR & CPM_SCR_O1ST_MASK) >> CPM_SCR_O1ST_BIT)
 #define __cpm_set_o1st(v) \
 	(REG_CPM_SCR = (REG_CPM_SCR & ~CPM_SCR_O1ST_MASK) | ((v) << (CPM_SCR_O1ST_BIT)))
-#define __cpm_suspend_usbphy()		(REG_CPM_SCR |= CPM_SCR_USBPHY_SUSPEND)
+#define __cpm_suspend_udcphy()		(REG_CPM_SCR &= ~CPM_SCR_UDCPHY_ENABLE)
+#define __cpm_suspend_usbphy()		(REG_CPM_SCR |= CPM_SCR_USBPHY_DISABLE)
 #define __cpm_enable_osc_in_sleep()	(REG_CPM_SCR |= CPM_SCR_OSC_ENABLE)
 
 
