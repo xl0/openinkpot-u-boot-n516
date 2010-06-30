@@ -43,9 +43,6 @@
 #include <asm/jz4740.h>
 #include <net.h>
 struct eth_device *dev;
-#define CS8900_BASE ((u32)(dev->iobase))
-#define CONFIG_DRIVER_CS8900
-#define CS8900_BUS16
 #include <command.h>
 #include <asm/io.h>
 
