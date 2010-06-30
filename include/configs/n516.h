@@ -297,6 +297,8 @@
 #define GPIO_LED_EN		124 /* GPD28 */
 #define GPIO_HP_DETECT		116 /* GPD28 */
 
+#define GPIO_ETH_CS		60	 /* GPB28 - /CHIPSEL signal for the external cs8900a (debug board) */
+
 #define GPIO_RST_L          50   /* GPB18 LCD_SPL */
 #define GPIO_LCDRDY         49   /* GPB17 LCD_CLS */
 #define GPIO_STBY           86   /* GPC22 LCD_PS */

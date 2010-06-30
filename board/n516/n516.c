@@ -97,6 +97,9 @@ static void gpio_init(void)
 	__gpio_as_output(GPIO_LED_EN);
 	__gpio_set_pin(GPIO_LED_EN);
 	__gpio_as_input(127);
+
+	/* Make sure the external cs8900a won't touch the bus */
+	__gpio_enable_pull(GPIO_ETH_CS);
 }
 
 static void cpm_init(void)
