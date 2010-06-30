@@ -117,8 +117,8 @@ int cpu_eth_init(bd_t *bis)
 
 int cpu_mmc_init(bd_t *bis)
 {
+#if defined (CONFIG_JZ4740) && defined (CONFIG_MMC)
 	printf("Initialization of MMC\n");
-#ifdef CONFIG_JZ4740
 	jz_mmc_initialize(bis);
 #endif
 	return 0;
