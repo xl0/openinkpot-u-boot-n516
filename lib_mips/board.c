@@ -404,13 +404,13 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	size = flash_init();
 	display_flash_config (size);
 	bd->bi_flashsize = size;
-#endif
 
 	bd->bi_flashstart = CONFIG_SYS_FLASH_BASE;
 #if CONFIG_SYS_MONITOR_BASE == CONFIG_SYS_FLASH_BASE
 	bd->bi_flashoffset = monitor_flash_len;	/* reserved area for U-Boot */
 #else
 	bd->bi_flashoffset = 0;
+#endif
 #endif
 
 	/* initialize malloc() area */
@@ -433,8 +433,10 @@ puts("NAND initialized\n");
 	env_relocate();
 	puts("env relocated\n");
 
+#if defined (CONFIG_CMD_NET)
 	/* IP Address */
 	bd->bi_ip_addr = getenv_IPaddr("ipaddr");
+#endif
 
 #if defined(CONFIG_PCI)
 	/*
