@@ -263,19 +263,19 @@ void chip8track_init_start(vidinfo_t *panel_info)
 
 	LCD_PWRDOWN (panel_info->jz_fb.pfbcmdbegin);	// lcd reset stdy down
 	LCD_PWRUP (panel_info->jz_fb.pfbcmdbegin);	//lcd reset stby high
-	flush_cache_all();
+	flush_dcache_all();
 	wait_for_ready();
 
 	LCD_CONFIG (panel_info->jz_fb.pfbcmdbegin);
-	flush_cache_all();
+	flush_dcache_all();
 	wait_for_ready();
 
 	LCD_INIT (panel_info->jz_fb.pfbcmdbegin);
-	flush_cache_all();
+	flush_dcache_all();
 	wait_for_ready();
 
 	chip8track_cmd_display(panel_info);
-	flush_cache_all();
+	flush_dcache_all();
 
 	return;
 }
@@ -284,7 +284,7 @@ void chip8track_sync(vidinfo_t *panel_info)
 {
 	if (!sync_disabled && !corrupted_waveforms) {
 		chip8track_cmd_display(panel_info);
-		flush_cache_all();
+		flush_dcache_all();
 		wait_for_ready();
 	}
 }

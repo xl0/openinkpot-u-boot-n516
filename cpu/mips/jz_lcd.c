@@ -271,7 +271,7 @@ void lcd_disable (void);
 static int  jz_lcd_init_mem(void *lcdbase, vidinfo_t *vid);
 static void jz_lcd_desc_init(vidinfo_t *vid);
 static int  jz_lcd_hw_init( vidinfo_t *vid );
-extern int flush_cache_all(void);
+extern int flush_dcache_all(void);
 
 #if LCD_BPP == LCD_COLOR8
 void lcd_setcolreg (ushort regno, ushort red, ushort green, ushort blue);
@@ -456,7 +456,7 @@ static void jz_lcd_desc_init(vidinfo_t *vid)
 		fbi->fdadr0 = virt_to_phys(fbi->dmadesc_fbhigh); /* no pal just fbhigh */
 	}
 
-	flush_cache_all();
+	flush_dcache_all();
 }
 
 static int  jz_lcd_hw_init(vidinfo_t *vid)

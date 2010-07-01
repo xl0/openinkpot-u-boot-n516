@@ -85,7 +85,7 @@ extern void lcd_enable_finish (void);
 static void *lcd_logo (void);
 
 #ifdef CONFIG_JzRISC		  /* JzRISC core */ 
-extern int flush_cache_all(void);
+extern int flush_dcache_all(void);
 #endif
 
 #if (LCD_BPP == LCD_COLOR8) || (LCD_BPP == LCD_COLOR16)
@@ -310,7 +310,7 @@ static void lcd_drawchars(ushort x, ushort y, uchar *str, int count)
 		}
 		y0 += VIDEO_FONT_WIDTH;
 	}
-	flush_cache_all();
+	flush_dcache_all();
 }
 #else
 
@@ -374,7 +374,7 @@ static void lcd_drawchars (ushort x, ushort y, uchar *str, int count)
 	}
 
 #ifdef CONFIG_JzRISC		  /* JzRISC core */ 
-	flush_cache_all();
+	flush_dcache_all();
 #endif
 }
 #endif
@@ -540,7 +540,7 @@ void lcd_clear(void)
 	console_row = 0;
 
 #ifdef CONFIG_JzRISC		  /* JzRISC core */ 
-	flush_cache_all();
+	flush_dcache_all();
 #endif
 
 }
@@ -995,7 +995,7 @@ static void *lcd_logo (void)
 
 #ifdef CONFIG_LCD_LOGO
 	bitmap_plot (0, 0);
-	flush_cache_all();
+	flush_dcache_all();
 #endif /* CONFIG_LCD_LOGO */
 
 #ifdef CONFIG_LCD_INFO
