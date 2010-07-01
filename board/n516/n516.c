@@ -133,7 +133,7 @@ int checkboard (void)
 {
 	DECLARE_GLOBAL_DATA_PTR;
 
-	printf("Board: Hanvon n516 e-book (CPU Speed %d MHz)\n",
+	printf("Board: Hanvon n516 e-book (CPU Speed %ld MHz)\n",
 	       gd->cpu_clk/1000000);
 
 	return 0; /* success */
