@@ -25,46 +25,36 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-//#define DEBUG
-//#define DEBUG_SHELL
-
 #define CONFIG_MIPS32		1  /* MIPS32 CPU core */
 #define CONFIG_JzRISC		1  /* JzRISC core */
 #define CONFIG_JZSOC		1  /* Jz SoC */
 #define CONFIG_JZ4740		1  /* Jz4740 SoC */
-#define CONFIG_PAVO		1  /* PAVO validation board */
+#define CONFIG_N516		1  /* Hanvon N516 e-book reader */
 
 #define CONFIG_BOARD_NAME	"n516"
 #define CONFIG_BOARD_HWREV	"1.0"
-#define CONFIG_FIRMWARE_EPOCH	"0"
-#define CONFIG_UPDATE_TMPBUF	0x80600000
-#define CONFIG_UPDATE_CHUNKSIZE	0x800000
-#define CONFIG_UPDATE_FILENAME	"update.oifw"
-#define CONFIG_UPDATE_FILEEXT	".oifw"
-#define CONFIG_UBI_PARTITION	"UBI"
 
 #define CONFIG_SKIP_LOWLEVEL_INIT	1
 #undef  CONFIG_SKIP_RELOCATE_UBOOT
-
-#define CONFIG_LCD                 /* LCD support */
-#define CONFIG_JZLCD_METRONOME_800x600
-#define LCD_BPP			LCD_COLOR8
-//#define CONFIG_SYS_WHITE_ON_BLACK
-//#define CONFIG_LCD_LOGO
-//#define CONFIG_SYS_LCD_LOGOONLY_NOINFO
-#define WFM_DATA_SIZE  ( 1 << 14 )
-#define CONFIG_METRONOME_WF_LEN (64 * (1 << 10))
-#define CONFIG_METRONOME_WF_NAND_OFFSET (0x100000)
-#define BMP_LOGO_HEIGHT 0
-#define CONFIG_UBI_WF_VOLUME "waveforms"
-#define CONFIG_UBI_BOOTSPLASH_VOLUME "bootsplash"
-#define CONFIG_METRONOME_BOOTSPLASH_LEN 480000
 
 #define CONFIG_JZSOC_I2C
 #define CONFIG_HARD_I2C
 #define CONFIG_SYS_I2C_SPEED	100000
 #define CONFIG_SYS_I2C_SLAVE	0
 #define CONFIG_LPC_I2C_ADDR	0x54
+
+#define CONFIG_LCD                 /* LCD support */
+#define CONFIG_JZLCD_METRONOME_800x600
+#define LCD_BPP                        LCD_COLOR8
+#define WFM_DATA_SIZE  ( 1 << 14 )
+#define CONFIG_METRONOME_WF_LEN (64 * (1 << 10))
+
+
+#define CONFIG_UBI_PARTITION   "UBI"
+#define BMP_LOGO_HEIGHT 0
+#define CONFIG_UBI_WF_VOLUME "waveforms"
+#define CONFIG_UBI_BOOTSPLASH_VOLUME "bootsplash"
+#define CONFIG_METRONOME_BOOTSPLASH_LEN 480000
 
 #define JZ4740_NORBOOT_CFG	JZ4740_NORBOOT_16BIT	/* NOR Boot config code */
 #define JZ4740_NANDBOOT_CFG	JZ4740_NANDBOOT_B8R3	/* NAND Boot config code */
@@ -75,9 +65,8 @@
 
 #define CONFIG_SYS_UART_BASE  		UART0_BASE	/* Base of the UART channel */
 
-#define CONFIG_BAUDRATE		57600
+#define CONFIG_BAUDRATE			57600
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
-
 
 #define CONFIG_MMC      	1
 #define CONFIG_GENERIC_MMC	1
@@ -88,76 +77,53 @@
 #define CONFIG_SYS_PROMPT_HUSH_PS2 ">"
 #define CONFIG_CMDLINE_EDITING
 
-/* allow to overwrite serial and ethaddr */
-#define CONFIG_ENV_OVERWRITE
+#define CONFIG_CMD_ITEST	/* Integer (and string) test	*/
+#define CONFIG_CMD_LOADB	/* loadb			*/
+#define CONFIG_CMD_MEMORY	/* md mm nm mw cp cmp crc base loop mtest */
+#define CONFIG_CMD_NET		/* bootp, tftpboot, rarpboot	*/
+#define CONFIG_CMD_RUN		/* run command in env variable	*/
 
-#include <config_cmd_default.h>
-
-#undef CONFIG_CMD_BDI		/* bdinfo			*/
-#undef CONFIG_CMD_FPGA
-#undef CONFIG_CMD_ECHO		/* echo arguments		*/
-#undef CONFIG_CMD_FLASH	/* flinfo, erase, protect	*/
-#undef CONFIG_CMD_FPGA		/* FPGA configuration Support	*/
-#undef CONFIG_CMD_IMI		/* iminfo			*/
-#undef CONFIG_CMD_ITEST	/* Integer (and string) test	*/
-#undef CONFIG_CMD_LOADB	/* loadb			*/
-#undef CONFIG_CMD_LOADS	/* loads			*/
-#undef CONFIG_CMD_NFS		/* NFS support			*/
-#undef CONFIG_CMD_SETGETDCR	/* DCR support on 4xx		*/
-#undef CONFIG_CMD_SOURCE	/* "source" command support	*/
-#undef CONFIG_CMD_XIMG		/* Load part of Multi Image	*/
-
-//#define CONFIG_CMD_ASKENV
-//#define CONFIG_CMD_DHCP
-//#define CONFIG_CMD_PING
 #define CONFIG_CMD_NAND
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_MTDPARTS
-//#define CONFIG_CMD_JFFS2
-//#define CONFIG_JFFS2_NAND
-//#define CONFIG_JFFS2_CMDLINE
+
 #define CONFIG_CMD_UPDATE
-#define CONFIG_CMD_N516_TEST
+#define CONFIG_FIRMWARE_EPOCH  	"0"
+#define CONFIG_UPDATE_TMPBUF   	0x80600000
+#define CONFIG_UPDATE_CHUNKSIZE	0x800000
+#define CONFIG_UPDATE_FILENAME	"update.oifw"
+#define CONFIG_UPDATE_FILEEXT	".oifw"
+#define CONFIG_UBI_PARTITION	"UBI"
 
+
+#define CONFIG_RBTREE /* Needed by UBI */
 #define CONFIG_DOS_PARTITION
-
 #define CONFIG_MTD_PARTITIONS
-#define CONFIG_RBTREE
-
-#define CONFIG_BOOTP_MASK	( CONFIG_BOOTP_DEFAUL )
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
-
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_BOOTDELAY	0
 #define CONFIG_BOOTFILE	        uImage	/* file to load */
 #define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw panic=5 " MTDPARTS_DEFAULT
-#define CONFIG_BOOTCOMMAND	"check_and_update; setenv bootargs $bootargs $batt_level_param; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
+#define CONFIG_BOOTCOMMAND     "check_and_update; setenv bootargs $bootargs $batt_level_param; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
 #define CONFIG_SYS_AUTOLOAD	"n"		/* No autoload */
 #define CONFIG_IPADDR		192.168.111.1
 #define CONFIG_SERVERIP		192.168.111.2
 #define MTDIDS_DEFAULT		"nand0=jz4740-nand"
-#define MTDPARTS_DEFAULT	"mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
+#define MTDPARTS_DEFAULT        "mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
+
 #define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0" \
-				"stdout=serial\0stderr=lcd\0"
+		                  "stdout=serial\0stderr=lcd\0"
 
 #define CONFIG_SYS_CONSOLE_IS_IN_ENV
-//#define CONFIG_NET_MULTI
 
 #define CONFIG_DRIVER_CS8900      1
 #define CS8900_BASE             (0xa8000000)
 #define CS8900_BUS16
 
 #define CONFIG_ETHADDR		00:2a:cc:2a:af:fe    /* Ethernet address */
-
-/*
- * Serial download configuration
- *
- */
-#define CONFIG_LOADS_ECHO	1	/* echo on for serial download	*/
-#define CONFIG_SYS_LOADS_BAUD_CHANGE	1	/* allow baudrate change	*/
 
 /*
  * Miscellaneous configurable options
@@ -185,11 +151,8 @@
 /*-----------------------------------------------------------------------
  * Environment
  *----------------------------------------------------------------------*/
-#if !defined(CONFIG_NAND_U_BOOT) && !defined(CONFIG_NAND_SPL)
-#define CONFIG_ENV_IS_IN_FLASH     1	/* use FLASH for environment vars	*/
-#else
-#define CONFIG_ENV_IS_IN_NAND	1	/* use NAND for environment vars	*/
-#endif
+#define CONFIG_ENV_IS_NOWHERE
+#define CONFIG_ENV_SIZE			0x1000
 
 /*-----------------------------------------------------------------------
  * NAND FLASH configuration
@@ -226,39 +189,11 @@
 #define CONFIG_SYS_NAND_BLOCK_SIZE	(128 << 10)	/* NAND chip block size		*/
 #define CONFIG_SYS_NAND_BADBLOCK_PAGE	63		/* NAND bad block was marked at this page in a block, starting from 0 */
 
-#ifdef CONFIG_ENV_IS_IN_NAND
-//#define CONFIG_ENV_SIZE			CONFIG_SYS_NAND_BLOCK_SIZE
-#define CONFIG_ENV_SIZE			(128 * 1024)
-//#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_BLOCK_SIZE + CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_BLOCK_SIZE)	/* environment starts here  */
-#define CONFIG_ENV_OFFSET		(CONFIG_SYS_NAND_U_BOOT_SIZE + CONFIG_SYS_NAND_U_BOOT_OFFS)
-//#define CONFIG_ENV_OFFSET_REDUND	(CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE)
-#endif
-
-
-/*-----------------------------------------------------------------------
- * NOR FLASH and environment organization
- */
-#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* max number of memory banks */
-#define CONFIG_SYS_MAX_FLASH_SECT	(128)	/* max number of sectors on one chip */
-
-#define PHYS_FLASH_1		0xa8000000 /* Flash Bank #1 */
-
-/* The following #defines are needed to get flash environment right */
-#define	CONFIG_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
-#define	CONFIG_SYS_SYS_MONITOR_BASE	TEXT_BASE   /* in pavo/config.mk TEXT_BASE=0x88000000*/ 
+#define	CONFIG_SYS_MONITOR_BASE		TEXT_BASE
+#define	CONFIG_SYS_SYS_MONITOR_BASE	TEXT_BASE
 #define	CONFIG_SYS_MONITOR_LEN		(256*1024)  /* Reserve 256 kB for Monitor */
 
-#define CONFIG_SYS_FLASH_BASE		PHYS_FLASH_1
-
-/* timeout values are in ticks */
-#define CONFIG_SYS_FLASH_ERASE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Erase */
-#define CONFIG_SYS_FLASH_WRITE_TOUT	(2 * CONFIG_SYS_HZ) /* Timeout for Flash Write */
-
-#ifdef CONFIG_ENV_IS_IN_FLASH
-#define	CONFIG_ENV_IS_NOWHERE	1
-#define CONFIG_ENV_ADDR		0xa8040000
-#define CONFIG_ENV_SIZE		0x20000
-#endif
+#define CONFIG_SYS_NO_FLASH
 
 /*-----------------------------------------------------------------------
  * SDRAM Info.
@@ -303,7 +238,5 @@
 #define GPIO_LCDRDY         49   /* GPB17 LCD_CLS */
 #define GPIO_STBY           86   /* GPC22 LCD_PS */
 #define GPIO_ERR            87   /* GPC23 LCD_REV */
-
-
 
 #endif	/* __CONFIG_H */
