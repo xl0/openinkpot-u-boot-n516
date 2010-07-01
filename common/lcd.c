@@ -447,6 +447,7 @@ int drv_lcd_init (void)
 	device_t lcddev;
 	int rc;
 
+	printf("lcd_init\n");
 	lcd_base = (void *)(gd->fb_base);
 
 	lcd_line_length = (panel_info.vl_col * NBITS (panel_info.vl_bpix)) / 8;
@@ -467,8 +468,9 @@ int drv_lcd_init (void)
 	return (rc == 0) ? 1 : rc;
 }
 
-static void drv_lcd_init_finish (void)
+void drv_lcd_init_finish (void)
 {
+	printf("lcd_init_finish\n");
 #ifdef CONFIG_LCD_ASYNC_INIT
 	lcd_init_finish();
 #endif
@@ -1015,14 +1017,12 @@ static void *lcd_logo (void)
 
 static int do_lcd_init(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	printf("lcd_init\n");
 	drv_lcd_init();
 	return 0;
 }
 
 static int do_lcd_init_finish(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
-	printf("lcd_init_finish\n");
 	drv_lcd_init_finish();
 	return 0;
 }

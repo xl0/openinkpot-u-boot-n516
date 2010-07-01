@@ -822,7 +822,8 @@ static int ask_user(char *buf, unsigned int len)
 	return num;
 }
 
-extern void _machine_restart(void);
+void _machine_restart(void);
+void drv_lcd_init_finish (void);
 static int do_checkupdate(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 {
 	int choice;
@@ -845,6 +846,8 @@ static int do_checkupdate(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 
 	if (list_empty(&found_files))
 		return 0;
+
+	drv_lcd_init_finish();
 
 	if (check_for_menu_key()) {
 		res = 0;
