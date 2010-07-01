@@ -483,7 +483,7 @@ static void gpio_init(void)
 void nand_boot(void)
 {
 	int boot_sel;
-	void (*uboot)(void);
+	void __attribute__((noreturn)) (*uboot)(void);
 
 	/*
 	 * Init hardware
