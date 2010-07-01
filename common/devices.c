@@ -221,7 +221,7 @@ int devices_init (void)
 #if defined(CONFIG_HARD_I2C) || defined(CONFIG_SOFT_I2C)
 	i2c_init (CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 #endif
-#ifdef CONFIG_LCD
+#if defined (CONFIG_LCD) && !defined(CONFIG_LCD_DEFER_INIT)
 	drv_lcd_init ();
 #endif
 #if defined(CONFIG_VIDEO) || defined(CONFIG_CFB_CONSOLE)

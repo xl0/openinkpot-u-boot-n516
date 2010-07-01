@@ -43,18 +43,19 @@
 #define CONFIG_SYS_I2C_SLAVE	0
 #define CONFIG_LPC_I2C_ADDR	0x54
 
-#define CONFIG_LCD                 /* LCD support */
+#define CONFIG_LCD				/* LCD support */
+#define CONFIG_LCD_DEFER_INIT
+#define CONFIG_LCD_ASYNC_INIT
+#define LCD_BPP                 LCD_COLOR8
+#define BMP_LOGO_HEIGHT 	0
 #define CONFIG_JZLCD_METRONOME_800x600
-#define LCD_BPP                        LCD_COLOR8
-#define WFM_DATA_SIZE  ( 1 << 14 )
-#define CONFIG_METRONOME_WF_LEN (64 * (1 << 10))
+#define WFM_DATA_SIZE		16384
+#define CONFIG_METRONOME_WF_LEN 65536
+#define CONFIG_WF_ADDR		0x80500000
 
-
-#define CONFIG_UBI_PARTITION   "UBI"
-#define BMP_LOGO_HEIGHT 0
 #define CONFIG_UBI_WF_VOLUME "waveforms"
-#define CONFIG_UBI_BOOTSPLASH_VOLUME "bootsplash"
-#define CONFIG_METRONOME_BOOTSPLASH_LEN 480000
+#define CONFIG_CMD_N516_TEST
+
 
 #define JZ4740_NORBOOT_CFG	JZ4740_NORBOOT_16BIT	/* NOR Boot config code */
 #define JZ4740_NANDBOOT_CFG	JZ4740_NANDBOOT_B8R3	/* NAND Boot config code */
@@ -97,17 +98,25 @@
 #define CONFIG_UPDATE_FILEEXT	".oifw"
 #define CONFIG_UBI_PARTITION	"UBI"
 
-
 #define CONFIG_RBTREE /* Needed by UBI */
 #define CONFIG_DOS_PARTITION
 #define CONFIG_MTD_PARTITIONS
+
+#define str(s) #s
+#define xstr(x) str(x)
 
 /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_BOOTDELAY	0
 #define CONFIG_BOOTFILE	        uImage	/* file to load */
 #define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw panic=5 " MTDPARTS_DEFAULT
-#define CONFIG_BOOTCOMMAND     "check_and_update; setenv bootargs $bootargs $batt_level_param; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
+
+#define CONFIG_BOOTCOMMAND	"ubi part nand " CONFIG_UBI_PARTITION " ;" \
+				"ubi read " xstr(CONFIG_WF_ADDR) " " CONFIG_UBI_WF_VOLUME " " xstr(CONFIG_METRONOME_WF_LEN) " ;" \
+				"lcd_init ;" \
+				"lcd_init_finish ; " \
+				"check_and_update; setenv bootargs $bootargs $batt_level_param; ubi read 0x80600000 bootsplash && show_image 0x80600000; ubi read 0x80600000 kernel; bootm 0x80600000; ubi read 0x80600000 errorsplash && show_image 0x80600000; while test 0 = 0; do check_and_update; done"
+
 #define CONFIG_SYS_AUTOLOAD	"n"		/* No autoload */
 #define CONFIG_IPADDR		192.168.111.1
 #define CONFIG_SERVERIP		192.168.111.2

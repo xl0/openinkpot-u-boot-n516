@@ -323,7 +323,6 @@ void lcd_ctrl_init (void *lcdbase)
 	panel_info.vl_row = 600;
 #endif
 	__lcd_display_on();
-
 }
 
 /*----------------------------------------------------------------------*/
@@ -353,9 +352,18 @@ void lcd_enable (void)
 	REG_LCD_CTRL &= ~(1<<4); /* LCDCTRL.DIS */
 	REG_LCD_CTRL |= 1<<3;    /* LCDCTRL.ENA*/
 #ifdef CONFIG_JZLCD_METRONOME_800x600
-	chip8track_init(&panel_info);
+	chip8track_init_start(&panel_info);
 #endif
 }
+
+#ifdef CONFIG_LCD_ASYNC_INIT
+void lcd_enable_finish(void)
+{
+#ifdef CONFIG_JZLCD_METRONOME_800x600
+	chip8track_init_finish(&panel_info);
+#endif
+}
+#endif /* CONFIG_LCD_ASYNC_INIT */
 
 /*----------------------------------------------------------------------*/
 

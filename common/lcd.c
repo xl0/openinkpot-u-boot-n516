@@ -76,10 +76,12 @@ static inline void lcd_puts_xy (ushort x, ushort y, uchar *s);
 static inline void lcd_putc_xy (ushort x, ushort y, uchar  c);
 
 static int lcd_init (void *lcdbase);
+static void lcd_init_finish (void);
 
 static int lcd_clear_cmd (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
 extern void lcd_ctrl_init (void *lcdbase);
 extern void lcd_enable (void);
+extern void lcd_enable_finish (void);
 static void *lcd_logo (void);
 
 #ifdef CONFIG_JzRISC		  /* JzRISC core */ 
@@ -465,6 +467,13 @@ int drv_lcd_init (void)
 	return (rc == 0) ? 1 : rc;
 }
 
+static void drv_lcd_init_finish (void)
+{
+#ifdef CONFIG_LCD_ASYNC_INIT
+	lcd_init_finish();
+#endif
+}
+
 /*----------------------------------------------------------------------*/
 static int lcd_clear_cmd (cmd_tbl_t * cmdtp, int flag, int argc, char *argv[])
 {
@@ -534,7 +543,6 @@ void lcd_clear(void)
 	flush_cache_all();
 #endif
 
-	return (0);
 }
 
 U_BOOT_CMD(
@@ -566,6 +574,12 @@ static int lcd_init (void *lcdbase)
 	return 0;
 }
 
+#ifdef CONFIG_LCD_ASYNC_INIT
+static void lcd_init_finish(void)
+{
+	lcd_enable_finish();
+}
+#endif
 
 /************************************************************************/
 /* ** ROM capable initialization part - needed to reserve FB memory	*/
@@ -996,6 +1010,35 @@ static void *lcd_logo (void)
 	return ((void *)lcd_base);
 #endif /* CONFIG_LCD_LOGO && !CONFIG_LCD_INFO_BELOW_LOGO */
 }
+
+#ifdef CONFIG_LCD_DEFER_INIT
+
+static int do_lcd_init(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	printf("lcd_init\n");
+	drv_lcd_init();
+	return 0;
+}
+
+static int do_lcd_init_finish(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	printf("lcd_init_finish\n");
+	drv_lcd_init_finish();
+	return 0;
+}
+
+U_BOOT_CMD(
+	lcd_init, 1, 0, do_lcd_init,
+	"Initialize the LCD, don't wait for it to complete",
+	NULL
+);
+U_BOOT_CMD(
+	lcd_init_finish, 1, 0, do_lcd_init_finish,
+	"Initialize the LCD",
+	NULL
+);
+
+#endif /* CONFIG_LCD_DEFER_INIT */
 
 /************************************************************************/
 /************************************************************************/

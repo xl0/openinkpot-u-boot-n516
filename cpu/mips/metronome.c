@@ -2,7 +2,6 @@
 #include <linux/types.h>
 #include <asm/errno.h>
 #include <linux/unaligned/access_ok.h>
-#include <nand.h>
 #include <malloc.h>
 #if defined(CONFIG_JZ4730)
 #include <asm/jz4730.h>
@@ -98,7 +97,7 @@ static void wait_for_ready(void)
 }
 
 /* here we decode the incoming waveform file and populate metromem */
-int load_waveform(vidinfo_t *panel_info, u8 *wfmem, u8 *mem, size_t size, int m, int t)
+int load_waveform(vidinfo_t *panel_info, u8 *wfmem, unsigned long wf_addr, size_t size, int m, int t)
 {
 	int tta;
 	int wmta;
@@ -114,6 +113,7 @@ int load_waveform(vidinfo_t *panel_info, u8 *wfmem, u8 *mem, size_t size, int m,
 	u8 mc, trc;
 	u16 *p;
 	u16 img_cksum;
+	u8 *mem = (u8 *) wf_addr;
 
 	debug("Loading waveforms, mode %d, temperature %d\n", m, t);
 
@@ -246,43 +246,19 @@ static void  __gpio_init_chip8track(void)
 	__gpio_clear_pin(GPIO_RST_L);
 	__gpio_clear_pin(GPIO_STBY);
 
-	mdelay(10);//it's neccessary, othrewise display will have some wrong
+	mdelay(10); //it's neccessary, othrewise display will have some wrong
 }
 
 extern void flush_dcache_all(void);
-extern int run_command (const char *cmd, int flag);
-void chip8track_init(vidinfo_t *panel_info)
+void chip8track_init_start(vidinfo_t *panel_info)
 {
-	u8 *buf;
-	nand_info_t *nand;
-	size_t length = CONFIG_METRONOME_WF_LEN;
-	char cmd[70];
-	
-	buf = malloc(CONFIG_METRONOME_WF_LEN);
-#if 0
-#ifdef CONFIG_SYS_NAND_SELECT_DEVICE
-	board_nand_select_device(nand_info[0].priv, 0);
-#endif
-
-	nand = &nand_info[0];
-
-
-	if (nand_read_skip_bad(nand, CONFIG_METRONOME_WF_NAND_OFFSET,
-				&length, buf))
-		printf("Cannot read waveforms from flash!\n");
-#endif
-	sprintf(cmd, "ubi part nand " CONFIG_UBI_PARTITION "; ubi read 0x%p " CONFIG_UBI_WF_VOLUME " 0x%x",
-			buf, CONFIG_METRONOME_WF_LEN);
-	run_command(cmd, 0);
-
 	__gpio_init_chip8track();
 
-//	REG_LCD_DA1 = (unsigned long)wfmdata;
-	
-	if (load_waveform(panel_info, (u8 *)panel_info->jz_fb.pfbwfmbegin, buf, CONFIG_METRONOME_WF_LEN, 0, 25)) {
+	if (load_waveform(panel_info, (u8 *)panel_info->jz_fb.pfbwfmbegin, CONFIG_WF_ADDR, CONFIG_METRONOME_WF_LEN, 0, 25)) {
 		printf("Waveform loading error!\n");
 		corrupted_waveforms = 1;
 	}
+
 	memset(panel_info->jz_fb.pfbdatabegin, 0xff, 800*600);
 
 	LCD_PWRDOWN (panel_info->jz_fb.pfbcmdbegin);	// lcd reset stdy down
@@ -298,18 +274,8 @@ void chip8track_init(vidinfo_t *panel_info)
 	flush_cache_all();
 	wait_for_ready();
 
-	chip8track_sync(panel_info);
-
-	if (load_waveform(panel_info, (u8 *)panel_info->jz_fb.pfbwfmbegin, buf, CONFIG_METRONOME_WF_LEN, 3, 25)) {
-		printf("Waveform loading error!\n");
-		corrupted_waveforms = 1;
-	}
-
-/*	sprintf(cmd, "ubi read 0x%p " CONFIG_UBI_BOOTSPLASH_VOLUME " 0x%x", panel_info->jz_fb.pfbdatabegin, CONFIG_METRONOME_BOOTSPLASH_LEN);
-	run_command(cmd, 0);
-	chip8track_sync(panel_info);
-*/
-	free(buf);
+	chip8track_cmd_display(panel_info);
+	flush_cache_all();
 
 	return;
 }
@@ -320,6 +286,16 @@ void chip8track_sync(vidinfo_t *panel_info)
 		chip8track_cmd_display(panel_info);
 		flush_cache_all();
 		wait_for_ready();
+	}
+}
+
+void chip8track_init_finish(vidinfo_t *panel_info)
+{
+	chip8track_sync(panel_info);
+
+	if (load_waveform(panel_info, (u8 *)panel_info->jz_fb.pfbwfmbegin, CONFIG_WF_ADDR, CONFIG_METRONOME_WF_LEN, 3, 25)) {
+		printf("Waveform loading error!\n");
+		corrupted_waveforms = 1;
 	}
 }
 
