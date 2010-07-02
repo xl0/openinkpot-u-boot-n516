@@ -114,6 +114,7 @@
 #define CONFIG_BOOTCOMMAND	"ubi part nand " CONFIG_UBI_PARTITION " ;" \
 				"ubi read " xstr(CONFIG_WF_ADDR) " " CONFIG_UBI_WF_VOLUME " " xstr(CONFIG_METRONOME_WF_LEN) " ; " \
 				"lcd_init ; " \
+				"setenv stderr lcd ; " \
 				"check_and_update ; " \
 				"setenv bootargs $bootargs $batt_level_param ; " \
 				"ubi read 0x80600000 kernel ;" \
@@ -128,10 +129,8 @@
 #define MTDIDS_DEFAULT		"nand0=jz4740-nand"
 #define MTDPARTS_DEFAULT        "mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
 
-#define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0" \
-		                  "stdout=serial\0stderr=lcd\0"
+#define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0"
 
-#define CONFIG_SYS_CONSOLE_IS_IN_ENV
 
 #define CONFIG_DRIVER_CS8900      1
 #define CS8900_BASE             (0xa8000000)
