@@ -37,12 +37,6 @@
 #define CONFIG_SKIP_LOWLEVEL_INIT	1
 #undef  CONFIG_SKIP_RELOCATE_UBOOT
 
-#define CONFIG_JZSOC_I2C
-#define CONFIG_HARD_I2C
-#define CONFIG_SYS_I2C_SPEED	100000
-#define CONFIG_SYS_I2C_SLAVE	0
-#define CONFIG_LPC_I2C_ADDR	0x54
-
 #define CONFIG_LCD				/* LCD support */
 #define CONFIG_LCD_DEFER_INIT
 #define CONFIG_LCD_ASYNC_INIT
@@ -54,7 +48,6 @@
 #define CONFIG_WF_ADDR		0x80500000
 
 #define CONFIG_UBI_WF_VOLUME "waveforms"
-#define CONFIG_CMD_N516_TEST
 
 
 #define JZ4740_NORBOOT_CFG	JZ4740_NORBOOT_16BIT	/* NOR Boot config code */
@@ -69,11 +62,6 @@
 #define CONFIG_BAUDRATE			57600
 #define CONFIG_SYS_BAUDRATE_TABLE	{ 9600, 19200, 38400, 57600, 115200 }
 
-#define CONFIG_MMC      	1
-#define CONFIG_GENERIC_MMC	1
-#define CONFIG_JZ_MMC		1
-#define CONFIG_FAT		1
-
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT_HUSH_PS2 ">"
 #define CONFIG_CMDLINE_EDITING
@@ -82,24 +70,15 @@
 #define CONFIG_CMD_LOADB	/* loadb			*/
 #define CONFIG_CMD_MEMORY	/* md mm nm mw cp cmp crc base loop mtest */
 #define CONFIG_CMD_NET		/* bootp, tftpboot, rarpboot	*/
+#define CONFIG_CMD_DHCP
 #define CONFIG_CMD_RUN		/* run command in env variable	*/
 
 #define CONFIG_CMD_NAND
-#define CONFIG_CMD_MMC
-#define CONFIG_CMD_FAT
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_MTDPARTS
 
-#define CONFIG_CMD_UPDATE
-#define CONFIG_FIRMWARE_EPOCH  	"0"
-#define CONFIG_UPDATE_TMPBUF   	0x80600000
-#define CONFIG_UPDATE_CHUNKSIZE	0x800000
-#define CONFIG_UPDATE_FILENAME	"update.oifw"
-#define CONFIG_UPDATE_FILEEXT	".oifw"
 #define CONFIG_UBI_PARTITION	"UBI"
-
 #define CONFIG_RBTREE /* Needed by UBI */
-#define CONFIG_DOS_PARTITION
 #define CONFIG_MTD_PARTITIONS
 
 #define str(s) #s
@@ -115,22 +94,14 @@
 				"ubi read " xstr(CONFIG_WF_ADDR) " " CONFIG_UBI_WF_VOLUME " " xstr(CONFIG_METRONOME_WF_LEN) " ; " \
 				"lcd_init ; " \
 				"setenv stderr lcd ; " \
-				"check_and_update ; " \
-				"setenv bootargs $bootargs $batt_level_param ; " \
 				"ubi read 0x80600000 kernel ;" \
-				"bootm 0x80600000 ;"\
-				"while test 0 = 0; do check_and_update; done"
-
-				/* "ubi read 0x80600000 errorsplash && show_image 0x80600000 ; " \*/
-				/* "ubi read 0x80600000 bootsplash && show_image 0x80600000 ; " \*/
-#define CONFIG_SYS_AUTOLOAD	"n"		/* No autoload */
+				"bootm 0x80600000 ;"
 #define CONFIG_IPADDR		192.168.111.1
 #define CONFIG_SERVERIP		192.168.111.2
 #define MTDIDS_DEFAULT		"nand0=jz4740-nand"
 #define MTDPARTS_DEFAULT        "mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
 
 #define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0"
-
 
 #define CONFIG_DRIVER_CS8900      1
 #define CS8900_BASE             (0xa8000000)
