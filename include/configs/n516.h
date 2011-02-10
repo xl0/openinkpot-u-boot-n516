@@ -37,6 +37,29 @@
 #define CONFIG_SKIP_LOWLEVEL_INIT	1
 #undef  CONFIG_SKIP_RELOCATE_UBOOT
 
+#if 1
+#define CONFIG_JZSOC_I2C
+#define CONFIG_HARD_I2C
+#define CONFIG_SYS_I2C_SPEED   100000
+#define CONFIG_SYS_I2C_SLAVE   0
+#define CONFIG_LPC_I2C_ADDR    0x54
+
+#define CONFIG_MMC             1
+#define CONFIG_GENERIC_MMC     1
+#define CONFIG_JZ_MMC          1
+#define CONFIG_FAT             1
+
+#define CONFIG_DOS_PARTITION
+
+#define CONFIG_CMD_UPDATE
+#define CONFIG_FIRMWARE_EPOCH          "0"
+#define CONFIG_UPDATE_TMPBUF           0x80600000
+#define CONFIG_UPDATE_CHUNKSIZE        0x800000
+#define CONFIG_UPDATE_FILENAME "update.oifw"
+#define CONFIG_UPDATE_FILEEXT  ".oifw"
+#endif
+
+
 #define CONFIG_LCD				/* LCD support */
 #define CONFIG_LCD_DEFER_INIT
 #define CONFIG_LCD_ASYNC_INIT
@@ -74,12 +97,15 @@
 #define CONFIG_CMD_RUN		/* run command in env variable	*/
 
 #define CONFIG_CMD_NAND
+#define CONFIG_CMD_MMC
+#define CONFIG_CMD_FAT
 #define CONFIG_CMD_UBI
 #define CONFIG_CMD_MTDPARTS
 
 #define CONFIG_UBI_PARTITION	"UBI"
 #define CONFIG_RBTREE /* Needed by UBI */
 #define CONFIG_MTD_PARTITIONS
+
 
 #define str(s) #s
 #define xstr(x) str(x)
@@ -88,22 +114,50 @@
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_BOOTDELAY	0
 #define CONFIG_BOOTFILE	        uImage	/* file to load */
-#define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw panic=5 " MTDPARTS_DEFAULT
+//#define CONFIG_BOOTARGS		"mem=64M console=ttyS0,57600n8 ip=off rootfstype=ubifs root=ubi:rootfs ubi.mtd=UBI rw panic=5 " MTDPARTS_DEFAULT
 
-#define CONFIG_BOOTCOMMAND	"ubi part nand " CONFIG_UBI_PARTITION " ;" \
-				"ubi read " xstr(CONFIG_WF_ADDR) " " CONFIG_UBI_WF_VOLUME " " xstr(CONFIG_METRONOME_WF_LEN) " ; " \
-				"lcd_init ; " \
-				"setenv stderr lcd ; " \
-				"ubi read 0x80600000 kernel ;" \
-				"bootm 0x80600000 ;"
-#define CONFIG_IPADDR		192.168.111.1
-#define CONFIG_SERVERIP		192.168.111.2
-#define MTDIDS_DEFAULT		"nand0=jz4740-nand"
-#define MTDPARTS_DEFAULT        "mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
+#define CONFIG_BOOTCOMMAND \
+	"run load_wf; " \
+	"setenv bootargs $ba_common $ba_ubi $ba_other; " \
+	"ubi read 0x80600000 kernel; " \
+	"bootm 0x80600000; "
 
-#define CONFIG_EXTRA_ENV_SETTINGS "mtdids=nand0=jz4740-nand\0mtdparts=mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)\0"
+#define MTDIDS_DEFAULT "nand0=jz4740-nand"
+#define MTDPARTS_DEFAULT "mtdparts=jz4740-nand:1M@0(uboot)ro,-@1M(UBI)"
 
-#define CONFIG_DRIVER_CS8900      1
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"load_wf=ubi part nand " CONFIG_UBI_PARTITION "; " \
+	"ubi read " xstr(CONFIG_WF_ADDR) " " CONFIG_UBI_WF_VOLUME " " xstr(CONFIG_METRONOME_WF_LEN) "; " \
+	"lcd_init; " \
+	"setenv stderr lcd\0" \
+	\
+	"netboot=" /* Load the kernel from tftp, use ubi as root.*/ \
+	"run load_wf; " \
+	"dhcp 0x80600000; " \
+	"setenv bootargs $ba_common $ba_ubi $ba_ip $ba_other; " \
+	"bootm 0x80600000;\0" \
+	\
+	"nfsboot=" /* Load the kernel from tftp, use nfs root. */ \
+	"run load_wf; " \
+	"dhcp 0x80600000; " \
+	"setenv bootargs $ba_common $ba_nfs $ba_ip $ba_other; " \
+	"bootm 0x80600000;\0" \
+	\
+	"ba_common=mem=64M console=ttyS0,57600n8 ubi.mtd=UBI rw panic=5 " MTDPARTS_DEFAULT "\0" \
+	\
+	"ba_ubi=rootfstype=ubifs root=ubi:rootfs\0" \
+	\
+	"ba_ip=ip=dhcp\0"\
+	\
+	"ba_nfs=root=/dev/nfs nfsroot=/srv/nfs/openinkpot\0" \
+	\
+	"ba_other=\0" \
+	\
+	MTDIDS_DEFAULT "\0" \
+	\
+	"mtdparts=" MTDPARTS_DEFAULT "\0"
+
+#define CONFIG_DRIVER_CS8900    1
 #define CS8900_BASE             (0xa8000000)
 #define CS8900_BUS16
 
